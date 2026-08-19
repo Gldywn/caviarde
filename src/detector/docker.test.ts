@@ -22,7 +22,7 @@ describe("detector image", () => {
 
   it("matches the digest compose.yaml runs", async () => {
     const compose = await import("node:fs/promises").then((fs) =>
-      fs.readFile(new URL("../../compose.yaml", import.meta.url), "utf8"),
+      fs.readFile("compose.yaml", "utf8"),
     );
     expect(compose).toContain(DETECTOR_IMAGE);
   });
@@ -35,7 +35,7 @@ describe("detector image", () => {
 
   it("sets the same thresholds as compose.yaml", async () => {
     const compose = await import("node:fs/promises").then((fs) =>
-      fs.readFile(new URL("../../compose.yaml", import.meta.url), "utf8"),
+      fs.readFile("compose.yaml", "utf8"),
     );
     for (const [key, value] of Object.entries(FLOORS)) {
       expect(compose).toContain(`${key}: "${value}"`);
