@@ -13,6 +13,6 @@
   belongs to elsewhere in the text
 - Technical identifiers pass through untouched, so a masked ticket stays usable
   for debugging and database queries
-- Set Up Detector: start the local detector from Raycast, without a terminal
+- Set up Detector: start the local detector from Raycast, without a terminal
 - Degrades to pattern detection alone when the detector is unavailable, and says
   so in the HUD rather than failing

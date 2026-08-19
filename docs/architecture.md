@@ -1,7 +1,7 @@
 # Architecture
 
 Caviarde reads the clipboard, replaces personal data with placeholders, and
-pastes the result. One command, no interface, everything local.
+pastes the result. No interface, and nothing leaves the machine by default.
 
 ## Stack
 
@@ -32,9 +32,12 @@ One qualification: pnpm auto-installs peer dependencies, so the tree contains
 packages that no manifest here declares (Prettier arrives that way, through the
 Raycast ESLint config). Those are pinned by the lockfile alone.
 
-## The command
+## The commands
 
-`Mask and Paste`, mode `no-view`.
+Two. `Mask and Paste` is `no-view` and does the work. `Set up Detector` is a
+`view` command that starts the optional local detector, so a user who installed
+from the store never has to open a terminal; it needs a window because pulling
+the image takes minutes and a progress bar has to be shown somewhere.
 
 ```
 Clipboard.readText()
@@ -70,8 +73,11 @@ src/
       iban.ts                mod-97
       ip.ts                  address validity, and which ranges identify nobody
       french-business.ts     SIREN, SIRET
+  setup-detector.tsx         the Set up Detector command
   detector/
     client.ts                the single HTTP module
+    image.ts                 pinned digest, thresholds, docker probe paths
+    docker.ts                container lifecycle
   masking/
     placeholders.ts          [TYPE_N] assignment
     apply.ts                 right-to-left replacement
@@ -79,10 +85,10 @@ src/
 
 Tests sit next to what they test.
 
-`mask-and-paste.ts` is the only file that imports `@raycast/api`. That package
-has no entry point outside the Raycast runtime, so any module importing it cannot
-be unit-tested; preference parsing therefore lives in `preferences.ts` as pure
-functions and the command calls `getPreferenceValues()` itself.
+The two command entry points are the only files that import `@raycast/api`. That
+package has no entry point outside the Raycast runtime, so any module importing
+it cannot be unit-tested; preference parsing therefore lives in `preferences.ts`
+as pure functions and each command calls `getPreferenceValues()` itself.
 
 `detector/client.ts` is the only file that knows the detector's endpoint, payload
 and response shape. That contract is unversioned, so an upstream change is a

@@ -24,16 +24,15 @@ with black ink; this does it with placeholders.
 You copy a support ticket. You press one key. What you paste is the same ticket
 with the people taken out.
 
-```diff
-- Marie Dubois à Lyon signale un souci. Contact marie.dubois@acme-solutions.fr
-- ou 06 12 34 56 78. IBAN FR7630006000011234567890189, SIRET 12345678200010.
-+ [PERSON_1] à [LOCATION_1] signale un souci. Contact [EMAIL_1]
-+ ou [PHONE_1]. IBAN [IBAN_1], SIRET [SIRET_1].
-```
+![Caviarde masking a support ticket: the clipboard holds a name, a location, an
+email, a phone number, a card and an IBAN; the pasted result replaces each with a
+numbered placeholder](metadata/caviarde-1.png)
 
 The placeholders are numbered and stable within a paste, so a model can still
-reason about who did what. `[PERSON_1]` and `[PERSON_2]` remain two different
-people all the way through the conversation.
+reason about who did what. `[PERSON_1]` and `[PERSON_2]` stay two different
+people all the way through a conversation, and technical identifiers are left
+untouched, because a masked ticket you cannot use for a database query has failed
+at its job.
 
 ## Where it helps
 
@@ -56,47 +55,28 @@ Anywhere the clipboard crosses a boundary it should not.
 
 The same reflex covers all of them: mask the clipboard, then paste.
 
-## Why placeholders and not deletion
-
-Deleting the sensitive parts of a ticket usually destroys the question you were
-asking. A masked ticket stays answerable: the model still sees that a person
-wrote to another person about an invoice, and you still see which line to fix.
-
-Technical identifiers are deliberately left alone for the same reason. UUIDs,
-object ids, order references, timestamps, git SHAs and loopback addresses all
-pass through untouched, because a masked ticket you cannot use for a database
-query has failed at its job.
-
 ## Install
 
 > Caviarde is not in the Raycast Store yet. Until it is, use the developer setup
 > below.
 
-### Two minutes
+Install the extension, then open Raycast Settings, find *Caviarde → Mask and
+Paste*, and record a shortcut. ⌥⌘V sits next to the paste you already know.
 
-Install the extension, open Raycast Settings, find *Caviarde → Mask and Paste*,
-and record a shortcut. ⌥⌘V sits next to the paste you already know.
-
-That is the whole setup, and it already works. Pattern detection runs in-process
-with nothing else installed: emails, phone numbers, IP addresses, IBANs, cards,
-SIRET, SIREN, API keys, JWTs, private keys, and names written as `@mentions`.
-
-It does **not** yet catch names in ordinary prose, places or company names. Those
-need the detector below, and the HUD tells you every time a paste went out
+That is the whole setup, and it already works: pattern detection runs in-process
+with nothing else installed. Names in prose, places and company names need the
+optional detector below, and the HUD tells you every time a paste went out
 without them.
 
-### Names, places and companies
+### The optional detector
 
-Run the **Set Up Detector** command from Raycast. It looks for a container
-runtime, pulls a digest-pinned detector image, starts it on loopback and waits
-until it answers.
+Run the **Set up Detector** command from Raycast. It finds your container
+runtime, pulls a digest-pinned image, starts it on loopback and waits until it
+answers. Docker Desktop, OrbStack and colima all work.
 
-You need a container runtime first: Docker Desktop, OrbStack and colima all work.
-The first run downloads about 1.3 GB, so the command will tell you to come back
-once it lands. After that the container holds roughly 2.2 GB of memory and
-starts in a few seconds.
-
-Nothing is exposed beyond `127.0.0.1`, the container runs read-only with every
+The first run downloads about 1.3 GB, so the command tells you to come back once
+it lands. The container then holds roughly 2.2 GB of memory and starts in
+seconds. Nothing is exposed beyond `127.0.0.1`, it runs read-only with every
 capability dropped, and the image is pinned by sha256 digest rather than by tag.
 
 ### Developers
@@ -112,39 +92,33 @@ pnpm dev
 
 `compose.yaml` runs the same image as the setup command, with
 `assets/detector-patch/gliner_layer.py` mounted rather than baked, which is what
-you want while changing the patch or retuning the confidence thresholds. Both
-listen on `127.0.0.1:5002`, so the extension does not care which one is running.
-
-```bash
-pnpm test           # integration tests skip themselves when the detector is down
-pnpm lint
-pnpm exec tsc --noEmit
-```
+you want while changing the patch or retuning the thresholds. Both listen on
+`127.0.0.1:5002`, so the extension does not care which is running.
 
 ## What it catches
 
-**Without any service, in-process, sub-millisecond**
+**Patterns, always, with no network and no dependency.** Email addresses, French
+and international phone numbers, IPv4 and IPv6, IBANs validated with mod-97,
+credit cards and SIRET validated with Luhn, SIREN company numbers, API keys and
+access tokens, JWTs, PEM private keys, and names written as `@mentions`. Every
+match is checksum-validated where a checksum exists, so a random sixteen-digit
+number is not mistaken for a card.
 
-Email addresses, French and international phone numbers, IPv4 and IPv6
-addresses, IBANs validated with mod-97, credit card numbers and SIRET validated
-with Luhn, SIREN company numbers, API keys and access tokens, JWTs, PEM private
-keys, and names written as `@mentions`.
+French identifiers are first-class rather than an afterthought, which is unusual:
+most redaction tools handle US formats and stop there.
 
-The French identifiers are first-class rather than an afterthought, which is
-unusual: most redaction tools handle SSNs and US phone formats and stop there.
+**The detector, when running.** People, places, street addresses and company
+names. This is where a model earns its keep: it finds the name it has never seen
+before, which is exactly the one no list would contain. A name mentioned once as
+`@Camille Rousseau` is also masked when it appears three lines later as a bare
+`Camille`, with the same placeholder.
 
-Every match is checksum-validated where a checksum exists, so a random
-sixteen-digit number is not mistaken for a card.
+When the detector is unreachable, nothing breaks. Caviarde masks with patterns
+alone and names what it skipped:
 
-**With the detector**
-
-People, places, street addresses, and company names. This is where a model earns
-its keep: it finds the name it has never seen before, which is exactly the one no
-list would contain.
-
-A name mentioned once as `@Camille Rousseau` is also masked when it appears three
-lines later as a bare `Camille`, with the same placeholder, because it is the
-same person.
+```
+2 masked: 1 email, 1 IBAN (partial: names and places not checked)
+```
 
 ## Privacy
 
@@ -153,24 +127,21 @@ stored, and there is no unmask command: the placeholders are one-way by design.
 
 Clipboard text never leaves your machine as long as the Detector URL points at
 loopback, which is the default. That preference is the boundary of the promise,
-and it is documented as such in [docs/security-notes.md](docs/security-notes.md).
+and [docs/security-notes.md](docs/security-notes.md) says so plainly. The same
+document records the byte-for-byte audit of the detector image, which is pinned
+by digest: no shell, no package manager, no telemetry dependency, no injected
+certificate authority.
 
-The detector image is pinned by sha256 digest and was audited byte for byte
-against its upstream source before being trusted: layer by layer, no shell, no
-package manager, no telemetry dependency, no injected certificate authority.
+**Detection is best-effort.** The semantic layer is a probabilistic model. It
+will miss a name and it will occasionally mask something harmless, and
+over-masking is the direction this tool leans, because a masked ordinary word
+costs you nothing and a leaked name costs you a customer.
 
-## Detection is best-effort
-
-The semantic layer is a probabilistic model. It will miss a name, and it will
-occasionally mask something harmless. Over-masking is the direction this tool
-leans, because a masked ordinary word costs you nothing and a leaked name costs
-you a customer.
-
-**Caviarde reduces what you leak. It does not guarantee you leak nothing, and it
-is not a compliance control.** It is not a GDPR anonymisation measure, it has no
-audit trail, and it should not be the thing standing between you and a data
-protection obligation. Read what you paste. The known gaps are written down in
-[docs/limitations.md](docs/limitations.md) rather than glossed over.
+Caviarde reduces what you leak. It does not guarantee you leak nothing, it is not
+a GDPR anonymisation measure, it has no audit trail, and it should not stand
+between you and a data protection obligation. Read what you paste. The known gaps
+are written down in [docs/limitations.md](docs/limitations.md) rather than
+glossed over.
 
 ## Configuration
 
@@ -184,34 +155,15 @@ protection obligation. Read what you paste. The known gaps are written down in
 | Mask locations and addresses | on | Needs the detector |
 | Mask company and organisation names | on | Needs the detector and its patch |
 
-Text over 6,000 characters skips the semantic layer rather than truncating it.
-Truncating would mask a name in the first half of a document and leave the same
-name exposed in the second, which reads as protection that is not there.
-
-## When the detector is down
-
-Nothing breaks. Caviarde masks with patterns alone and says so:
-
-```
-2 masked: 1 email, 1 IBAN (partial: names and places not checked)
-```
-
-That wording is deliberate. It names what was not checked rather than what
-failed, so you always know which of the two passes you just got.
+Text over 6,000 characters skips the semantic layer rather than truncating it:
+truncating would mask a name in the first half of a document and leave it exposed
+in the second, which reads as protection that is not there. Above 1,000,000
+characters nothing is masked at all and the HUD says so.
 
 ## Contributing
 
 Read [AGENTS.md](AGENTS.md) first. The short version: no real data in this
 repository, ever, and no logging of clipboard content at any level.
-
-Changing the icon needs a full Raycast restart, not just `pnpm dev`. Settings
-picks the new file up immediately while the root search keeps serving the one it
-cached. Regenerate the PNG with `sips`, not `qlmanage`, which flattens
-transparency onto white:
-
-```bash
-cd assets && sips -s format png icon.svg --out icon.png
-```
 
 | Document | What it covers |
 |---|---|

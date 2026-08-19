@@ -40,8 +40,8 @@ persistence.
 
 ## Invariants that are easy to break
 
-- **Only `mask-and-paste.ts` imports `@raycast/api`.** That package has no entry
-  point outside the Raycast runtime, so any module importing it becomes
+- **Only the command entry points import `@raycast/api`.** That package has no
+  entry point outside the Raycast runtime, so any module importing it becomes
   impossible to unit-test. Preference parsing stays pure in `preferences.ts`.
 - **`detector/client.ts` is the only module that knows the detector's endpoint,
   payload and response shape.** The API is unversioned; keep the blast radius at
@@ -91,3 +91,8 @@ attribution.
 
 Documentation is written for someone receiving the project, not for whoever is
 working on it. No plans, no open questions, no second person, no notes to self.
+
+- Changing the icon needs a full Raycast restart, and the PNG is regenerated from
+  the SVG with `sips`, not `qlmanage`, which flattens transparency onto white.
+  Store screenshots in `metadata/` go the other way: `qlmanage` renders their
+  colours correctly, then `sips` crops to 2000x1250.
