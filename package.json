@@ -18,7 +18,7 @@
     },
     {
       "name": "setup-detector",
-      "title": "Set Up Detector",
+      "title": "Set up Detector",
       "subtitle": "Caviarde",
       "description": "Start the local detector Caviarde uses for its semantic layer",
       "mode": "view"
