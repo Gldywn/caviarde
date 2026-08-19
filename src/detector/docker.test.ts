@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readPullProgress } from "./docker";
+import { containerArgs, readPullProgress } from "./docker";
 import {
   CONTAINER_NAME,
   CONTAINER_PORT,
@@ -49,6 +49,47 @@ describe("detector image", () => {
 
   it("names the container distinctly from the compose one", () => {
     expect(CONTAINER_NAME).toBe("caviarde-detector");
+  });
+});
+
+describe("container arguments", () => {
+  const args = containerArgs("/tmp/gliner_layer.py");
+  const pair = (flag: string) => args[args.indexOf(flag) + 1];
+
+  it("publishes on loopback only, because /analyze is unauthenticated", () => {
+    expect(pair("-p")).toBe(`127.0.0.1:${CONTAINER_PORT}:${CONTAINER_PORT}`);
+  });
+
+  it("drops every capability and forbids regaining privileges", () => {
+    expect(pair("--cap-drop")).toBe("ALL");
+    expect(pair("--security-opt")).toBe("no-new-privileges");
+    expect(args).toContain("--read-only");
+  });
+
+  it("mounts the patch read-only", () => {
+    expect(pair("-v")).toBe(`/tmp/gliner_layer.py:${PATCH_TARGET}:ro`);
+  });
+
+  it("runs the digest-pinned image, never a tag", () => {
+    expect(args).toContain(DETECTOR_IMAGE);
+  });
+
+  // The inherited one probes a proxy on :3000 that this command never starts,
+  // and --health-cmd cannot replace it: the CLI wraps it in /bin/sh, which the
+  // image does not ship.
+  it("disables the inherited healthcheck rather than inheriting a failing one", () => {
+    expect(args).toContain("--no-healthcheck");
+    expect(args).not.toContain("--health-cmd");
+  });
+
+  it("serves on the port the default preference points at", () => {
+    expect(pair("--port")).toBe(String(CONTAINER_PORT));
+  });
+
+  it("passes the same thresholds compose.yaml sets", () => {
+    for (const [key, value] of Object.entries(FLOORS)) {
+      expect(args).toContain(`${key}=${value}`);
+    }
   });
 });
 

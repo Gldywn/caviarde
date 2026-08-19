@@ -141,47 +141,54 @@ export function readPullProgress(logPath: string): PullProgress | null {
   return { layers: status.size, done, finished: /^Status: /m.test(log), error };
 }
 
-export async function startContainer(
-  docker: string,
-  patchPath: string,
-): Promise<void> {
+export function containerArgs(patchPath: string): string[] {
   const env = Object.entries(FLOORS).flatMap(([key, value]) => [
     "-e",
     `${key}=${value}`,
   ]);
 
-  await run(
-    docker,
-    [
-      "run",
-      "-d",
-      "--name",
-      CONTAINER_NAME,
-      "--restart",
-      "unless-stopped",
-      // Loopback only: /analyze is unauthenticated.
-      "-p",
-      `127.0.0.1:${CONTAINER_PORT}:${CONTAINER_PORT}`,
-      "--read-only",
-      "--tmpfs",
-      "/tmp",
-      "--cap-drop",
-      "ALL",
-      "--security-opt",
-      "no-new-privileges",
-      "-v",
-      `${patchPath}:${PATCH_TARGET}:ro`,
-      ...env,
-      DETECTOR_IMAGE,
-      "uvicorn",
-      "detector.app:app",
-      "--host",
-      "0.0.0.0",
-      "--port",
-      String(CONTAINER_PORT),
-    ],
-    { timeout: 60_000, env: dockerEnv(docker) },
-  );
+  return [
+    "run",
+    "-d",
+    "--name",
+    CONTAINER_NAME,
+    "--restart",
+    "unless-stopped",
+    // Loopback only: /analyze is unauthenticated.
+    "-p",
+    `127.0.0.1:${CONTAINER_PORT}:${CONTAINER_PORT}`,
+    "--read-only",
+    "--tmpfs",
+    "/tmp",
+    "--cap-drop",
+    "ALL",
+    "--security-opt",
+    "no-new-privileges",
+    // The inherited healthcheck probes a proxy on :3000 that this command never
+    // starts, and it cannot be replaced here: the CLI only takes a shell form,
+    // and the image ships no shell. Readiness is polled over HTTP instead.
+    "--no-healthcheck",
+    "-v",
+    `${patchPath}:${PATCH_TARGET}:ro`,
+    ...env,
+    DETECTOR_IMAGE,
+    "uvicorn",
+    "detector.app:app",
+    "--host",
+    "0.0.0.0",
+    "--port",
+    String(CONTAINER_PORT),
+  ];
+}
+
+export async function startContainer(
+  docker: string,
+  patchPath: string,
+): Promise<void> {
+  await run(docker, containerArgs(patchPath), {
+    timeout: 60_000,
+    env: dockerEnv(docker),
+  });
 }
 
 export async function removeStoppedContainer(docker: string): Promise<void> {
