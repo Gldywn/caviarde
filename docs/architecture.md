@@ -163,7 +163,7 @@ unmasked paste.
 
 ```
 3 masked: 2 names, 1 email
-2 masked: 1 email, 1 IBAN (partial: detector unreachable)
+2 masked: 1 email, 1 IBAN (partial: names and places not checked)
 Nothing to mask
 Clipboard is empty
 ```

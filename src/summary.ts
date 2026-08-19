@@ -17,12 +17,14 @@ const NOUNS: Readonly<Record<EntityType, readonly [string, string]>> = {
   PRIVATE_KEY: ["private key", "private keys"],
 };
 
+/** Phrased as what went unchecked rather than what failed: a user with no
+ * detector sees this on every paste, and a fault reads as a broken install. */
 const SKIP_NOTE: Readonly<Record<SemanticSkipReason, string>> = {
-  unreachable: "detector unreachable",
-  timeout: "detector timed out",
-  "too-large": "text too large for name detection",
+  unreachable: "names and places not checked",
+  timeout: "detector too slow, names not checked",
+  "too-large": "text too long, names not checked",
   disabled: "name detection off",
-  failed: "detector error",
+  failed: "detector error, names not checked",
 };
 
 /** Ordered so the HUD reads consistently rather than by map insertion. */

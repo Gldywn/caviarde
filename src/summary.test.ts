@@ -28,25 +28,25 @@ describe("buildSummary", () => {
 
   it("flags an unreachable detector as partial", () => {
     expect(buildSummary(counts([["EMAIL", 1]]), "unreachable")).toBe(
-      "1 masked: 1 email (partial: detector unreachable)",
+      "1 masked: 1 email (partial: names and places not checked)",
     );
   });
 
   it("flags a timeout distinctly from unreachable", () => {
     expect(buildSummary(counts([["EMAIL", 1]]), "timeout")).toContain(
-      "detector timed out",
+      "detector too slow",
     );
   });
 
   it("flags oversized input", () => {
     expect(buildSummary(counts([["EMAIL", 1]]), "too-large")).toContain(
-      "text too large",
+      "text too long",
     );
   });
 
   it("still says partial when nothing was masked and the detector was down", () => {
     expect(buildSummary(counts([]), "unreachable")).toBe(
-      "Nothing to mask (partial: detector unreachable)",
+      "Nothing to mask (partial: names and places not checked)",
     );
   });
 
