@@ -2,10 +2,11 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "caviarde",
   "title": "Caviarde",
-  "description": "Mask PII in your clipboard before pasting into AI tools",
+  "description": "Mask PII in your clipboard before you paste it anywhere",
   "icon": "icon.png",
-  "author": "Gldywn",
+  "author": "gldywn",
   "categories": ["Developer Tools", "Security"],
+  "platforms": ["macOS"],
   "license": "MIT",
   "commands": [
     {
@@ -13,6 +14,13 @@
       "title": "Mask and Paste",
       "subtitle": "Caviarde",
       "description": "Replace personal data in the clipboard with placeholders, then paste the result",
+      "mode": "no-view"
+    },
+    {
+      "name": "setup-detector",
+      "title": "Set Up Detector",
+      "subtitle": "Caviarde",
+      "description": "Start the local detector that adds name, place and company masking",
       "mode": "no-view"
     }
   ],
