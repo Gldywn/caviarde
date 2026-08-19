@@ -17,7 +17,7 @@ services:
     volumes:
       # Upstream hardcodes the GLiNER label list, so organisations need this
       # three-line patch. See docs/detector-patch.md.
-      - ./detector-patch/gliner_layer.py:/opt/venv/lib/python3.14/site-packages/detector/gliner_layer.py:ro
+      - ./assets/detector-patch/gliner_layer.py:/opt/venv/lib/python3.14/site-packages/detector/gliner_layer.py:ro
 
     environment:
       # Upstream floors are tuned for precision and drop most French names.

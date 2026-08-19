@@ -1,6 +1,6 @@
 # The detector patch
 
-`compose.yaml` mounts `detector-patch/gliner_layer.py` over the copy inside the
+`compose.yaml` mounts `assets/detector-patch/gliner_layer.py` over the copy inside the
 pinned detector image. It is a three-line change to one upstream file, vendored
 verbatim so that rebasing onto a newer upstream is a diff rather than a rewrite.
 
@@ -12,7 +12,7 @@ verbatim so that rebasing onto a newer upstream is a diff rather than a rewrite.
 ```
 
 Upstream is Apache-2.0. The vendored file carries the attribution header that
-licence requires, and `detector-patch/LICENSE` is its licence text.
+licence requires, and `assets/detector-patch/LICENSE` is its licence text.
 
 ## Why a patch and not configuration
 

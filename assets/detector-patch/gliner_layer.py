@@ -1,5 +1,5 @@
 # This file is derived from PasteGuard and is redistributed under the Apache
-# License 2.0. See detector-patch/LICENSE for the licence text.
+# License 2.0. See assets/detector-patch/LICENSE for the licence text.
 #
 #   Source:   https://github.com/sgasser/pasteguard
 #   File:     detector/detector/gliner_layer.py
