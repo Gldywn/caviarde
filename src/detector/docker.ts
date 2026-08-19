@@ -1,5 +1,11 @@
 import { execFile, spawn } from "node:child_process";
-import { accessSync, constants } from "node:fs";
+import {
+  accessSync,
+  constants,
+  mkdirSync,
+  openSync,
+  readFileSync,
+} from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { promisify } from "node:util";
@@ -74,15 +80,65 @@ export async function imageIsPresent(docker: string): Promise<boolean> {
   }
 }
 
-/** Detached and unreferenced: the image is over a gigabyte and a Raycast command
- * must not sit waiting for it. */
-export function startPull(docker: string): void {
+/** Detached, with its output journalled: the pull survives the window closing,
+ * and the log is what lets the view show progress when it reopens. */
+export function startPull(docker: string, logPath: string): void {
+  mkdirSync(dirname(logPath), { recursive: true });
+  const out = openSync(logPath, "w");
   const child = spawn(docker, ["pull", DETECTOR_IMAGE], {
     detached: true,
-    stdio: "ignore",
+    stdio: ["ignore", out, out],
     env: dockerEnv(docker),
   });
   child.unref();
+}
+
+export interface PullProgress {
+  readonly layers: number;
+  readonly done: number;
+  readonly finished: boolean;
+  /** The docker line explaining the failure, when there is one. */
+  readonly error: string | null;
+}
+
+const LAYER_LINE = /^([0-9a-f]{12}):\s(.+)$/;
+const FAILURE = /error|denied|unauthorized|cannot|no such host/i;
+
+/** Docker writes one line per layer status change when stdout is not a TTY, so
+ * counting completed layers is the only progress signal available. */
+export function readPullProgress(logPath: string): PullProgress | null {
+  let log: string;
+  try {
+    log = readFileSync(logPath, "utf8");
+  } catch {
+    return null;
+  }
+
+  const status = new Map<string, string>();
+  let error: string | null = null;
+
+  for (const raw of log.split("\n")) {
+    const line = raw.trim();
+    if (line === "") continue;
+
+    const match = LAYER_LINE.exec(line);
+    const id = match?.[1];
+    const state = match?.[2];
+    if (id !== undefined && state !== undefined) {
+      status.set(id, state);
+      continue;
+    }
+    // Any non-layer line mentioning a failure is docker giving up, whatever the wording.
+    if (error === null && FAILURE.test(line)) error = line;
+  }
+
+  let done = 0;
+  for (const state of status.values()) {
+    if (state.startsWith("Pull complete") || state.startsWith("Already exists"))
+      done++;
+  }
+
+  return { layers: status.size, done, finished: /^Status: /m.test(log), error };
 }
 
 export async function startContainer(

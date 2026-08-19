@@ -20,8 +20,8 @@
       "name": "setup-detector",
       "title": "Set Up Detector",
       "subtitle": "Caviarde",
-      "description": "Start the local detector that adds name, place and company masking",
-      "mode": "no-view"
+      "description": "Start the local detector Caviarde uses for its semantic layer",
+      "mode": "view"
     }
   ],
   "preferences": [

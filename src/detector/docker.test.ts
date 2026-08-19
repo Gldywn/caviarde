@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readPullProgress } from "./docker";
 import {
   CONTAINER_NAME,
   CONTAINER_PORT,
@@ -70,5 +71,96 @@ describe("docker discovery", () => {
     expect(all).toContain("Docker.app");
     expect(all).toContain(".orbstack");
     expect(all).toContain(".colima");
+  });
+});
+
+describe("pull progress", () => {
+  const write = async (body: string) => {
+    const fs = await import("node:fs/promises");
+    const os = await import("node:os");
+    const path = await import("node:path");
+    const file = path.join(
+      await fs.mkdtemp(path.join(os.tmpdir(), "cvd-")),
+      "pull.log",
+    );
+    await fs.writeFile(file, body);
+    return file;
+  };
+
+  it("returns null when no pull has ever started", () => {
+    expect(readPullProgress("/nonexistent/pull.log")).toBeNull();
+  });
+
+  it("counts layers discovered and layers completed", async () => {
+    const file = await write(
+      [
+        "latest: Pulling from sgasser/pasteguard",
+        "95459497489f: Pulling fs layer",
+        "0122664876c0: Pulling fs layer",
+        "95459497489f: Download complete",
+        "95459497489f: Pull complete",
+      ].join("\n"),
+    );
+    expect(readPullProgress(file)).toEqual({
+      layers: 2,
+      done: 1,
+      finished: false,
+      error: null,
+    });
+  });
+
+  it("counts a layer already on disk as done", async () => {
+    const file = await write("95459497489f: Already exists");
+    expect(readPullProgress(file)?.done).toBe(1);
+  });
+
+  it("keeps only the latest status of a layer", async () => {
+    const file = await write(
+      ["abc123456789: Downloading", "abc123456789: Verifying Checksum"].join(
+        "\n",
+      ),
+    );
+    expect(readPullProgress(file)).toMatchObject({ layers: 1, done: 0 });
+  });
+
+  it("sees the terminal Status line as finished", async () => {
+    const file = await write(
+      [
+        "95459497489f: Pull complete",
+        "Status: Downloaded newer image for x",
+      ].join("\n"),
+    );
+    expect(readPullProgress(file)?.finished).toBe(true);
+  });
+
+  it("does not mistake the Digest line for a layer", async () => {
+    const file = await write(
+      "Digest: sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f",
+    );
+    expect(readPullProgress(file)?.layers).toBe(0);
+  });
+
+  it("reports a failure the daemon wrote", async () => {
+    const file = await write("Error response from daemon: manifest unknown");
+    expect(readPullProgress(file)?.error).toContain("manifest unknown");
+  });
+});
+
+describe("credential helper failure", () => {
+  it("is reported, because it is how the first real pull actually failed", async () => {
+    const fs = await import("node:fs/promises");
+    const os = await import("node:os");
+    const path = await import("node:path");
+    const file = path.join(
+      await fs.mkdtemp(path.join(os.tmpdir(), "cvd-")),
+      "pull.log",
+    );
+    await fs.writeFile(
+      file,
+      'error getting credentials - err: exec: "docker-credential-osxkeychain": executable file not found in $PATH, out: ``',
+    );
+    expect(readPullProgress(file)?.error).toContain(
+      "docker-credential-osxkeychain",
+    );
   });
 });
