@@ -1,7 +1,7 @@
 import { execFile, spawn } from "node:child_process";
 import { accessSync, constants } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { promisify } from "node:util";
 import {
   CONTAINER_NAME,
@@ -31,10 +31,30 @@ export function findDocker(): string | null {
   return null;
 }
 
+/** Docker shells out to credential helpers sitting beside its own binary, and
+ * Raycast's Node process has almost nothing on PATH. */
+function dockerEnv(docker: string): NodeJS.ProcessEnv {
+  const dirs = [
+    dirname(docker),
+    "/usr/local/bin",
+    "/opt/homebrew/bin",
+    "/usr/bin",
+    "/bin",
+  ];
+  const existing = process.env.PATH;
+  return {
+    ...process.env,
+    PATH:
+      [...new Set(dirs)].join(":") +
+      (existing === undefined ? "" : `:${existing}`),
+  };
+}
+
 export async function daemonIsUp(docker: string): Promise<boolean> {
   try {
     await run(docker, ["info", "--format", "{{.ServerVersion}}"], {
       timeout: 15_000,
+      env: dockerEnv(docker),
     });
     return true;
   } catch {
@@ -46,6 +66,7 @@ export async function imageIsPresent(docker: string): Promise<boolean> {
   try {
     await run(docker, ["image", "inspect", DETECTOR_IMAGE], {
       timeout: 15_000,
+      env: dockerEnv(docker),
     });
     return true;
   } catch {
@@ -59,6 +80,7 @@ export function startPull(docker: string): void {
   const child = spawn(docker, ["pull", DETECTOR_IMAGE], {
     detached: true,
     stdio: "ignore",
+    env: dockerEnv(docker),
   });
   child.unref();
 }
@@ -102,13 +124,16 @@ export async function startContainer(
       "--port",
       String(CONTAINER_PORT),
     ],
-    { timeout: 60_000 },
+    { timeout: 60_000, env: dockerEnv(docker) },
   );
 }
 
 export async function removeStoppedContainer(docker: string): Promise<void> {
   try {
-    await run(docker, ["rm", "-f", CONTAINER_NAME], { timeout: 30_000 });
+    await run(docker, ["rm", "-f", CONTAINER_NAME], {
+      timeout: 30_000,
+      env: dockerEnv(docker),
+    });
   } catch {
     // Nothing to remove is the normal case.
   }
