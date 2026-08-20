@@ -3,17 +3,28 @@ name: CI
 on:
   push:
     branches: [main]
+  # Never pull_request_target or workflow_run: both run in the base repository's
+  # context, which is what turned a fork pull request into a published payload
+  # for TanStack in May 2026.
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      # Pinned by commit, not by tag: 75 of the 76 tags of aquasecurity/trivy-action
+      # were force-pushed to malicious code in March 2026, and tj-actions/changed-files
+      # went the same way a year earlier.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
           cache: pnpm

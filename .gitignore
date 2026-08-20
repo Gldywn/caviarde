@@ -21,4 +21,5 @@ raycast-env.d.ts
 
 # Agent scratch space
 .orch/
+.claude/
 **/.cc-writes/
