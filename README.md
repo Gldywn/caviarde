@@ -26,7 +26,7 @@ with the people taken out.
 
 ![Caviarde masking a support ticket: the clipboard holds a name, a location, an
 email, a phone number, a card and an IBAN; the pasted result replaces each with a
-numbered placeholder](metadata/caviarde-1.png)
+numbered placeholder](media/screenshot.png)
 
 The placeholders are numbered and stable within a paste, so a model can still
 reason about who did what. `[PERSON_1]` and `[PERSON_2]` stay two different
