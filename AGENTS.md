@@ -78,8 +78,13 @@ either side of a threshold in two different documents. One sample proves nothing
   Containers stop when the Mac sleeps.
 - Integration tests skip themselves when the detector is down, mirroring how the
   extension degrades.
-- Changing the icon needs a full Raycast restart, and the PNG is regenerated with
-  `sips`, not `qlmanage`, which flattens transparency onto white.
+- Image sources live in `media/`. `assets/` holds only what the extension loads at
+  runtime, which the store checklist verifies, and `metadata/` only the store
+  screenshots.
+- Changing the icon needs a full Raycast restart. `assets/icon.png` is regenerated
+  from `media/icon.svg` with `sips`, not `qlmanage`, which flattens transparency
+  onto white. Store screenshots go the other way: `qlmanage` renders their colours
+  correctly where `sips` ignores tspan fills, then `sips` crops to 2000x1250.
 
 ## Where things are documented
 
@@ -91,8 +96,3 @@ attribution.
 
 Documentation is written for someone receiving the project, not for whoever is
 working on it. No plans, no open questions, no second person, no notes to self.
-
-- Changing the icon needs a full Raycast restart, and the PNG is regenerated from
-  the SVG with `sips`, not `qlmanage`, which flattens transparency onto white.
-  Store screenshots in `metadata/` go the other way: `qlmanage` renders their
-  colours correctly, then `sips` crops to 2000x1250.
