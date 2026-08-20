@@ -21,29 +21,32 @@ on the fly. One hotkey, no interface, and nothing leaves your machine by default
 *Caviarder*, in French, means to black out a passage in a document. Censors did it
 with black ink; this does it with placeholders.
 
-You copy a support ticket. You press one key. What you paste is the same ticket
-with the people taken out.
+You copy something with people in it. You press one key. What you paste is the
+same text with the people taken out.
 
-![Caviarde masking a support ticket: the clipboard holds a name, a location, an
-email, a phone number, a card and an IBAN; the pasted result replaces each with a
+![Caviarde masking copied text: the clipboard holds a name, a location, an email,
+a phone number, a card and an IBAN; the pasted result replaces each with a
 numbered placeholder](media/screenshot.png)
+
+A ticket, a log excerpt, a database row, an email thread, a CSV, a stack trace:
+whatever is in the clipboard, the same key does the same thing.
 
 The placeholders are numbered and stable within a paste, so a model can still
 reason about who did what. `[PERSON_1]` and `[PERSON_2]` stay two different
 people all the way through a conversation, and technical identifiers are left
-untouched, because a masked ticket you cannot use for a database query has failed
-at its job.
+untouched, because masked text you cannot use for a database query has failed at
+its job.
 
 ## Where it helps
 
 Anywhere the clipboard crosses a boundary it should not.
 
-- **AI assistants and LLMs.** Pasting a real ticket into ChatGPT, Claude, Copilot
-  or a coding agent sends a customer's name to a third party. This is the case
-  that gets talked about, and it is not the only one.
+- **AI assistants and LLMs.** Pasting real data into ChatGPT, Claude, Copilot or
+  a coding agent sends someone's name to a third party. This is the case that
+  gets talked about, and it is not the only one.
 - **Public issue trackers and pull requests.** A stack trace or a log excerpt
   attached to a GitHub issue is indexed forever.
-- **Shared channels.** Slack, Teams, Discord. A ticket pasted into a channel is
+- **Shared channels.** Slack, Teams, Discord. What you paste into a channel is
   visible to everyone in it, including people with no business reading it.
 - **Pastebins, diff viewers, JSON formatters, online translators.** Convenience
   tools that quietly keep what you give them.

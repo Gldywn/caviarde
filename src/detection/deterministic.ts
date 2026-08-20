@@ -38,7 +38,7 @@ const IBAN_CANDIDATE =
 
 const SIRET_CANDIDATE = /(?<!\d)\d{3}[ ]?\d{3}[ ]?\d{3}[ ]?\d{5}(?!\d)/g;
 const SIREN_CANDIDATE = /(?<!\d)\d{3}[ ]?\d{3}[ ]?\d{3}(?!\d)/g;
-/** A random 9-digit number passes Luhn one time in ten, and tickets are full of them. */
+/** A random 9-digit number passes Luhn one time in ten, and documents are full of them. */
 const SIREN_CONTEXT =
   /(?:siren|siret|rcs|immatricul|greffe)[^\p{L}\p{N}]{0,12}$/iu;
 const SIREN_CONTEXT_WINDOW = 32;

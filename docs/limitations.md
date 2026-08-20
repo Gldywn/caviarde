@@ -6,7 +6,7 @@ paste.
 
 ## Technical identifiers are not masked
 
-A masked ticket has to stay usable for debugging and database queries, so
+Masked text has to stay usable for debugging and database queries, so
 identifiers are deliberately left alone: UUIDs, object ids, prefixed ids
 (`cus_`, `org_`, `usr_`), bare numeric user and company ids, order references,
 epoch timestamps, git SHAs, semver, and Kubernetes pod names.

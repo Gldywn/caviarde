@@ -50,7 +50,7 @@ persistence.
   overlapping semantic span is dropped whole, never trimmed. Trimming a name out
   of an email leaves the domain live.
 - **Technical identifiers must survive masking.** UUIDs, object ids, numeric user
-  and company ids, timestamps, git SHAs, loopback addresses. A masked ticket that
+  and company ids, timestamps, git SHAs, loopback addresses. Masked text that
   cannot be used for a database query has failed. `identifiers.test.ts` locks
   this in.
 - **Placeholders are `[TYPE_N]`**, single brackets, 1-indexed per type. This is

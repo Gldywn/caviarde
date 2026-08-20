@@ -11,8 +11,8 @@
   names, through a detector running on the user's own machine
 - A lone first name is masked with the same placeholder as the full name it
   belongs to elsewhere in the text
-- Technical identifiers pass through untouched, so a masked ticket stays usable
-  for debugging and database queries
+- Technical identifiers pass through untouched, so masked text stays usable for
+  debugging and database queries
 - Set up Detector: start the local detector from Raycast, without a terminal
 - Degrades to pattern detection alone when the detector is unavailable, and says
   so in the HUD rather than failing
