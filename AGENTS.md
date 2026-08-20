@@ -85,6 +85,12 @@ either side of a threshold in two different documents. One sample proves nothing
   from `media/icon.svg` with `sips`, not `qlmanage`, which flattens transparency
   onto white. Store screenshots go the other way: `qlmanage` renders their colours
   correctly where `sips` ignores tspan fills, then `sips` crops to 2000x1250.
+- The repository is developed with pnpm but published with npm, so it carries both
+  lockfiles. `ray publish` requires `package-lock.json` and refuses outright when
+  `pnpm-lock.yaml` is present, so that file has to be moved aside for the length of
+  the command and put back afterwards. Regenerate `package-lock.json` with
+  `npm install --package-lock-only` in a directory holding only the manifest: run in
+  place, npm reads pnpm's virtual store and fails to resolve.
 
 ## Where things are documented
 
