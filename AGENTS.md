@@ -105,14 +105,27 @@ anything sitting in the folder ships, including agent scratch directories. Publi
 from a throwaway `git clone` rather than from the working copy, which also pins
 what goes out to a commit that exists on the remote.
 
-It requires `package-lock.json` at version 2 or above and refuses outright when
-`pnpm-lock.yaml` is present, so delete that one in the clone after installing.
+It requires `package-lock.json` at version 2 or above, refuses outright when
+`pnpm-lock.yaml` is present, and refuses again on a dirty working tree. Those
+three pull in opposite directions: the install needs the pnpm lockfile, the
+publish forbids it, and deleting a tracked file is itself a change to commit.
+
+```bash
+git clone <repo> && cd <clone>
+pnpm install --frozen-lockfile
+rm CLAUDE.md pnpm-lock.yaml
+git commit -qam "chore: trim for publishing"
+pnpm exec ray publish
+```
+
+`CLAUDE.md` is a symlink and has no business in a monorepo. The commit comes after
+the deletions and never before, and it stays in the clone. The command needs an
+interactive terminal for its GitHub sign-in, so it will not run through a
+non-TTY shell.
+
 Regenerate `package-lock.json` with `npm install --package-lock-only` in a
 directory holding only the manifest: run in place, npm reads pnpm's virtual store
 and fails to resolve.
-
-`CLAUDE.md` is a symlink and has no business in a monorepo; drop it in the clone
-too. The command needs an interactive terminal for its GitHub sign-in.
 
 ## Where things are documented
 
