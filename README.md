@@ -60,43 +60,61 @@ The same reflex covers all of them: mask the clipboard, then paste.
 
 ## Install
 
-> Caviarde is not in the Raycast Store yet. Until it is, use the developer setup
-> below.
+> [!IMPORTANT]
+> **Caviarde is not in the Raycast Store yet.** Until it is, build it from
+> source with the commands below. It takes about a minute and needs no account.
 
-Install the extension, then open Raycast Settings, find *Caviarde → Mask and
-Paste*, and record a shortcut. ⌥⌘V sits next to the paste you already know.
-
-That is the whole setup, and it already works: pattern detection runs in-process
-with nothing else installed. Names in prose, places and company names need the
-optional detector below, and the HUD tells you every time a paste went out
-without them.
-
-### The optional detector
-
-Run the **Set up Detector** command from Raycast. It finds your container
-runtime, pulls a digest-pinned image, starts it on loopback and waits until it
-answers. Docker Desktop, OrbStack and colima all work.
-
-The first run downloads about 1.3 GB, so the command tells you to come back once
-it lands. The container then holds roughly 2.2 GB of memory and starts in
-seconds. Nothing is exposed beyond `127.0.0.1`, it runs read-only with every
-capability dropped, and the image is pinned by sha256 digest rather than by tag.
-
-### Developers
+**1. Build it.** The last command compiles the extension and registers it in
+Raycast, which is all that installing means here.
 
 ```bash
 git clone https://github.com/gldywn/caviarde.git
 cd caviarde
-mise install        # Node and pnpm, per .nvmrc and packageManager
+mise install     # Node and pnpm, at the versions this repository pins
 pnpm install
-docker compose up -d
-pnpm dev
+pnpm build       # compiles and registers the extension in Raycast
 ```
 
-`compose.yaml` runs the same image as the setup command, with
-`assets/detector-patch/gliner_layer.py` mounted rather than baked, which is what
-you want while changing the patch or retuning the thresholds. Both listen on
-`127.0.0.1:5002`, so the extension does not care which is running.
+**2. Give it a shortcut.** Open Raycast Settings → Extensions, find **Caviarde →
+Mask and Paste**, and record one. **⌥⌘V** sits right next to the paste you
+already know.
+
+**That is the whole setup, and it already works.** Pattern detection runs
+in-process with nothing else installed: emails, phone numbers, IBANs, cards,
+keys. Names in prose, places and company names need the optional detector below,
+and the HUD tells you every time a paste went out without it.
+
+### The optional detector
+
+**Run the Set up Detector command from Raycast.** Nothing else to do: it finds
+your container runtime, pulls a digest-pinned image, starts it on loopback and
+waits until it answers, showing where it is the whole time. Docker Desktop,
+OrbStack, Rancher Desktop and colima all work.
+
+The first run downloads about **1.3 GB**, which you can leave running in the
+background. The container then holds roughly 2.2 GB of memory and starts in
+seconds. Nothing is exposed beyond `127.0.0.1`, it runs read-only with every
+capability dropped, and the image is pinned by sha256 digest rather than by tag.
+
+<details>
+<summary><b>Working on Caviarde itself</b></summary>
+
+<br>
+
+**`pnpm dev` replaces `pnpm build`.** It registers the extension the same way,
+then reloads it on every save.
+
+**`docker compose up -d` is only for changing the detector.** It runs the same
+image as *Set up Detector*, but with `assets/detector-patch/gliner_layer.py`
+mounted rather than baked in, which is what you want while editing the patch or
+retuning the confidence thresholds. Both listen on `127.0.0.1:5002`, so the
+extension does not care which one is running. To simply use the semantic layer,
+the command is enough.
+
+**`pnpm test` runs the suite.** The integration tests skip themselves when no
+detector answers, so they stay green without one.
+
+</details>
 
 ## What it catches
 
