@@ -19,7 +19,7 @@ const ISSUER_RANGES: readonly (readonly [number, number, number])[] = [
   [4, 3528, 3589], // JCB
   [4, 6011, 6011], // Discover
   // Never add UATP, prefix 1: every epoch millisecond timestamp starts with a
-  // 1 until 2286, which is the exact false positive this list exists to stop.
+  // 1 until 2033, which is the exact false positive this list exists to stop.
 ];
 
 function hasIssuerPrefix(digits: string): boolean {

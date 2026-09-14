@@ -6,7 +6,7 @@ import { CONTAINER_PORT } from "./image";
 describe("loopback port", () => {
   it("reads the port the preference actually names", () => {
     expect(loopbackPort("http://127.0.0.1:5002")).toBe(CONTAINER_PORT);
-    expect(loopbackPort("http://127.0.0.1:6000")).toBe(6000);
+    expect(loopbackPort("http://127.0.0.1:5003")).toBe(5003);
   });
 
   it("tolerates a trailing slash, which the probe strips anyway", () => {
@@ -40,6 +40,9 @@ describe("endpoints the managed container cannot serve", () => {
     ["a remote host", "http://detector.internal:5002"],
     ["a private address", "http://192.168.1.20:5002"],
     ["a port out of range", "http://127.0.0.1:70000"],
+    ["a port fetch refuses outright", "http://127.0.0.1:6000"],
+    ["a bare question mark, which swallows /health", "http://127.0.0.1:5002?"],
+    ["a bare hash, which swallows /health", "http://127.0.0.1:5002#"],
     ["port zero", "http://127.0.0.1:0"],
     ["a string that is not a URL", "127.0.0.1:5002"],
     ["another scheme entirely", "file:///tmp/detector"],
@@ -58,7 +61,7 @@ describe("endpoints the managed container cannot serve", () => {
 describe("what is accepted is what gets bound", () => {
   for (const url of [
     "http://127.0.0.1:5002",
-    "http://127.0.0.1:6000/",
+    "http://127.0.0.1:5003/",
     "http://127.0.0.1",
   ]) {
     it(`binds exactly the host and port of ${url}`, () => {
