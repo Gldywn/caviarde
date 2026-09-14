@@ -78,7 +78,7 @@ src/
   detector/
     client.ts                the single HTTP module
     image.ts                 pinned digest, thresholds, docker probe paths
-    endpoint.ts              the port the managed container must publish on
+    endpoint.ts              which Detector URLs the setup command can manage
     docker.ts                container lifecycle
   masking/
     placeholders.ts          [TYPE_N] assignment

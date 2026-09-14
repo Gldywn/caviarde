@@ -1,10 +1,40 @@
+/** `::1` also spells itself `0:0:0:0:0:0:0:1`, so the groups are compared
+ * rather than the text. Returns null when the value is not IPv6 at all. */
+function ipv6Groups(address: string): number[] | null {
+  if (!address.includes(":")) return null;
+
+  const halves = address.split("::");
+  if (halves.length > 2) return null;
+
+  const parse = (part: string): number[] =>
+    part === ""
+      ? []
+      : part
+          .split(":")
+          .map((g) => (/^[0-9a-f]{1,4}$/.test(g) ? parseInt(g, 16) : NaN));
+
+  const head = parse(halves[0] ?? "");
+  const tail = halves.length === 2 ? parse(halves[1] ?? "") : [];
+  if ([...head, ...tail].some(Number.isNaN)) return null;
+
+  if (halves.length === 1) return head.length === 8 ? head : null;
+
+  const elided = 8 - head.length - tail.length;
+  return elided < 1 ? null : [...head, ...Array(elided).fill(0), ...tail];
+}
+
 /** Loopback, unspecified and link-local identify nobody, and masking them only
  * destroys debugging signal. */
 export function isNonIdentifyingIp(value: string): boolean {
   const address = value.trim().toLowerCase();
 
-  if (address === "::1" || address === "::") return true;
-  if (/^fe[89ab][0-9a-f]:/.test(address)) return true;
+  const groups = ipv6Groups(address);
+  if (groups !== null) {
+    const leading = groups.slice(0, 7).every((g) => g === 0);
+    if (leading && (groups[7] === 0 || groups[7] === 1)) return true;
+    const first = groups[0] ?? 0;
+    return first >= 0xfe80 && first <= 0xfebf;
+  }
 
   const parts = address.split(".");
   if (parts.length !== 4) return false;

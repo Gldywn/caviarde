@@ -68,7 +68,7 @@ const TEXT = {
   detectorForeign:
     "A detector is already running on this address, so nothing was restarted.",
   detectorNeedsRuntime: `The detector needs a container runtime.\n\n${DEGRADED}`,
-  detectorRemote: `The Detector URL does not point at this machine, so this command cannot start or manage it. Point it back at loopback, or start that detector yourself.\n\n${DEGRADED}`,
+  detectorUnmanageable: `This command only manages a detector at \`http://127.0.0.1:<port>\`, plain HTTP with no path. Set Detector URL to that form, or start your detector yourself.\n\n${DEGRADED}`,
   detectorNeedsImage: `The detector cannot start until the image is downloaded.\n\n${DEGRADED}`,
   detectorRefused: `The container could not start and nothing is answering on this address. The port is most likely in use.\n\n${DEGRADED}`,
   detectorSilent:
@@ -115,10 +115,17 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function detectorAnswers(baseUrl: string): Promise<boolean> {
+/** The token goes out here too: a detector that also protects /health works
+ * for masking while this screen would call it unreachable. */
+async function detectorAnswers(
+  baseUrl: string,
+  authToken: string,
+): Promise<boolean> {
   try {
     const response = await fetch(`${baseUrl.replace(/\/+$/, "")}/health`, {
       signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS),
+      headers:
+        authToken.length > 0 ? { Authorization: `Bearer ${authToken}` } : {},
     });
     return response.ok;
   } catch {
@@ -176,8 +183,9 @@ async function pullImage(
 }
 
 async function run(update: Update, finish: () => void): Promise<void> {
-  const url = toSettings(getPreferenceValues<RawPreferences>()).detectorUrl;
-  const alreadyUp = await detectorAnswers(url);
+  const settings = toSettings(getPreferenceValues<RawPreferences>());
+  const url = settings.detectorUrl;
+  const alreadyUp = await detectorAnswers(url, settings.authToken);
   const port = loopbackPort(url);
   const address: [string, string] = ["Address", url];
 
@@ -201,7 +209,11 @@ async function run(update: Update, finish: () => void): Promise<void> {
     update("container", {
       state: alreadyUp ? "ok" : "fail",
       status: alreadyUp ? "Running" : "Not running",
-      body: alreadyUp ? TEXT.detectorForeign : TEXT.detectorNeedsRuntime,
+      body: alreadyUp
+        ? TEXT.detectorForeign
+        : port === null
+          ? TEXT.detectorUnmanageable
+          : TEXT.detectorNeedsRuntime,
       facts: detectorFacts,
     });
     finish();
@@ -224,7 +236,11 @@ async function run(update: Update, finish: () => void): Promise<void> {
     update("container", {
       state: alreadyUp ? "ok" : "fail",
       status: alreadyUp ? "Running" : "Not running",
-      body: alreadyUp ? TEXT.detectorForeign : TEXT.detectorNeedsRuntime,
+      body: alreadyUp
+        ? TEXT.detectorForeign
+        : port === null
+          ? TEXT.detectorUnmanageable
+          : TEXT.detectorNeedsRuntime,
       facts: detectorFacts,
     });
     finish();
@@ -291,7 +307,7 @@ async function run(update: Update, finish: () => void): Promise<void> {
     update("container", {
       state: "fail",
       status: "Not running",
-      body: TEXT.detectorRemote,
+      body: TEXT.detectorUnmanageable,
       facts: [address],
     });
     finish();
@@ -318,7 +334,7 @@ async function run(update: Update, finish: () => void): Promise<void> {
   }
 
   for (let attempt = 0; attempt < READY_ATTEMPTS; attempt++) {
-    if (await detectorAnswers(url)) {
+    if (await detectorAnswers(url, settings.authToken)) {
       update("container", {
         state: "ok",
         status: "Running",

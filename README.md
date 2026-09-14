@@ -169,7 +169,7 @@ glossed over.
 
 | Preference | Default | What it does |
 |---|---|---|
-| Detector URL | `http://127.0.0.1:5002` | Where the semantic detector lives |
+| Detector URL | `http://127.0.0.1:5002` | Where the semantic detector lives. Set up Detector only manages this loopback form |
 | Detector Timeout | `3500` ms | Past this, fall back to patterns alone |
 | Auth Token | empty | Bearer token, for a detector that is not local |
 | Phone Regions | `FR` | Without a region, only `+33`-style numbers are found |
