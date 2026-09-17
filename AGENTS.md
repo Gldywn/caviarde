@@ -87,11 +87,14 @@ either side of a threshold in two different documents. One sample proves nothing
 - Integration tests skip themselves when the detector is down, mirroring how the
   extension degrades.
 - Image sources live in `media/`, images the extension loads at runtime in
-  `assets/`, and the store checklist verifies that separation. There is no
-  `metadata/`: the store's `metadata-images` check wants a Raycast Window Capture
-  composite, centred with roughly 12% padding on every side, and the store page
-  renders the README regardless, so the illustration lives in `media/` and is shown
-  there.
+  `assets/`, and `metadata/` holds the store screenshots. The store's
+  `metadata-images` check enforces exactly 2000x1250 and roughly 12% padding on
+  every side, which a designed illustration cannot satisfy by guesswork: take
+  those with Raycast's Window Capture, which composes the window to their
+  geometry. It saves into `metadata/` only if that folder already exists, and
+  captures at the density of the screen in use, so a non-Retina display yields
+  1000x625 and fails. The README illustration stays in `media/`; the store page
+  renders the README as well as the carousel.
 - Changing the icon needs a full Raycast restart. `assets/icon.png` is regenerated
   from `media/icon.svg` with `sips`, not `qlmanage`, which flattens transparency
   onto white. The wider illustrations go the other way: `qlmanage` renders their
