@@ -98,7 +98,7 @@
     "@types/react": "19.2.18",
     "eslint": "10.8.0",
     "typescript": "5.9.3",
-    "vitest": "4.1.10"
+    "vitest": "4.1.11"
   },
   "scripts": {
     "build": "ray build -e dist",
