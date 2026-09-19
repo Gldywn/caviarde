@@ -34,4 +34,4 @@ jobs:
       # Integration tests skip themselves without a detector, which CI has none of.
       - run: pnpm test
 
-      - run: pnpm exec tsc --noEmit
+      - run: pnpm run build --output dist
