@@ -30,7 +30,7 @@
       "type": "textfield",
       "required": false,
       "title": "Detector URL",
-      "description": "Base URL of the local PasteGuard detector. Set Up Detector only manages http://127.0.0.1:<port>; any other address you have to run yourself.",
+      "description": "Base URL of the local PasteGuard detector. Set up Detector only manages http://127.0.0.1:<port>. For any other address, start the detector yourself.",
       "default": "http://127.0.0.1:5002"
     },
     {
