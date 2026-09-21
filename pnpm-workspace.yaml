@@ -1,3 +1,9 @@
+# The generated dist/package.json is not a workspace package.
+packages: ["."]
+
+# Installs are explicit; running a check must not repair node_modules implicitly.
+verifyDepsBeforeRun: error
+
 allowBuilds:
   # Its native binary ships in the platform package; vitest runs without it.
   esbuild: false

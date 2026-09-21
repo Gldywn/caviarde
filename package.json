@@ -5,8 +5,13 @@
   "description": "Mask PII in your clipboard before you paste it anywhere",
   "icon": "icon.png",
   "author": "gldywn",
-  "categories": ["Developer Tools", "Security"],
-  "platforms": ["macOS"],
+  "categories": [
+    "Developer Tools",
+    "Security"
+  ],
+  "platforms": [
+    "macOS"
+  ],
   "license": "MIT",
   "commands": [
     {
@@ -97,6 +102,7 @@
     "@types/node": "24.13.3",
     "@types/react": "19.2.18",
     "eslint": "10.8.0",
+    "prettier": "3.9.6",
     "typescript": "5.9.3",
     "vitest": "4.1.11"
   },

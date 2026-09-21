@@ -132,6 +132,10 @@ and fails to resolve.
 
 ## Where things are documented
 
+PRs created through a CLI or agent must follow
+`.github/PULL_REQUEST_TEMPLATE.md`, including when supplying `--body-file`.
+Verification records actual checks, skipped tests and remaining limitations.
+
 `docs/architecture.md` for the module layout and the span-merging rules,
 `docs/limitations.md` for what is knowingly not detected,
 `docs/security-notes.md` for the detector image audit and why it is pinned,

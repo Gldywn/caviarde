@@ -1,0 +1,25 @@
+name: Feature request
+description: A problem Caviarde should solve
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Examples and attachments must contain only fully invented data, never real clipboard content, customer data or secrets.
+        Suspected vulnerabilities belong in the [private reporting channel](https://github.com/Gldywn/caviarde/security/policy).
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: The task that is difficult or impossible with Caviarde today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Optional. A concrete problem is enough to start a discussion.
+  - type: textarea
+    id: detection-format
+    attributes:
+      label: New detection format
+      description: For a new format, include the country or locale, an authoritative format reference, fully invented examples and expected masked output. No secret-shaped examples in public reports.
