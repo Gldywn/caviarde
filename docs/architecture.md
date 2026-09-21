@@ -28,9 +28,8 @@ Node; the detector image is pinned by digest. A lockfile records what a resolve
 produced once, while an exact manifest states what is allowed at all, so a fresh
 resolve on another machine cannot widen a range.
 
-One qualification: pnpm auto-installs peer dependencies, so the tree contains
-packages that no manifest here declares (Prettier arrives that way, through the
-Raycast ESLint config). Those are pinned by the lockfile alone.
+One qualification: pnpm auto-installs peer dependencies. Packages that no
+manifest here declares are pinned by the lockfile alone.
 
 ## The commands
 

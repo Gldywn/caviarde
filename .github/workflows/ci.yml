@@ -34,4 +34,9 @@ jobs:
       # Integration tests skip themselves without a detector, which CI has none of.
       - run: pnpm test
 
-      - run: pnpm run build --output dist
+      - run: pnpm exec eslint src
+
+      - run: pnpm exec prettier --check src
+
+      # An explicit output keeps CI builds out of the local Raycast installation.
+      - run: pnpm run build --output dist --non-interactive

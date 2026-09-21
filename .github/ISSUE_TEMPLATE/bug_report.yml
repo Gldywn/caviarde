@@ -1,0 +1,74 @@
+name: Bug report
+description: Unexpected behavior in Caviarde
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Suspected vulnerabilities belong in the [private reporting channel](https://github.com/Gldywn/caviarde/security/policy).
+        All input, output and screenshots must use fully invented data, never real clipboard content, customer data or secrets.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Command or area
+      options:
+        - Mask and Paste
+        - Set up Detector
+        - Installation or preferences
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: macOS and Raycast versions, plus the Caviarde version or source commit if known. For documentation-only reports, N/A is sufficient.
+    validations:
+      required: true
+  - type: dropdown
+    id: detector
+    attributes:
+      label: Detector state
+      description: The detector state when the problem occurred.
+      options:
+        - Running with semantic detection enabled
+        - Unavailable or not installed
+        - Semantic detection disabled in preferences
+        - Not sure
+        - Not relevant
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: The command used, relevant preferences and steps that trigger the problem. No Auth Token values or private endpoint addresses.
+    validations:
+      required: true
+  - type: textarea
+    id: invented-input
+    attributes:
+      label: Fully invented input
+      description: Required for detection reports. Recreate the pattern with fictional names and identifiers, rather than editing a real ticket. No secret-shaped examples in public reports.
+      placeholder: Contact Camille Rousseau at camille.rousseau@example.com
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: For detection reports, include the expected masked output for the invented input, using placeholders such as [PERSON_1] and [EMAIL_1].
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: The result for the invented input, or the observed UI behavior. Screenshots must also contain only invented data.
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy
+      options:
+        - label: This report and its attachments contain only fully invented examples, with no real customer data or secrets.
+          required: true

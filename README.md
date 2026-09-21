@@ -185,6 +185,8 @@ characters nothing is masked at all and the HUD says so.
 
 Read [AGENTS.md](AGENTS.md) first. The short version: no real data in this
 repository, ever, and no logging of clipboard content at any level.
+Setup and verification commands are in [CONTRIBUTING.md](CONTRIBUTING.md).
+Suspected vulnerabilities follow [SECURITY.md](SECURITY.md).
 
 | Document | What it covers |
 |---|---|
