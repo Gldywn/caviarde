@@ -58,8 +58,9 @@ function authorization(authToken: string): Record<string, string> {
   return authToken.length > 0 ? { Authorization: `Bearer ${authToken}` } : {};
 }
 
-/** A mistyped label makes the detector return an empty list with no error, so
- * only names it is known to understand are ever sent. */
+/** The detector answers a label it does not know with nothing rather than an
+ * error, and reads an empty list as every label, so only known labels are
+ * sent, and never none. */
 function labelsFor(types: readonly EntityType[]): string[] {
   return [...LABEL_TO_TYPE]
     .filter(([, type]) => types.includes(type))
@@ -88,6 +89,9 @@ export async function analyze(
   request: AnalyzeRequest,
   config: DetectorConfig,
 ): Promise<AnalyzeOutcome> {
+  const labels = labelsFor(request.types);
+  if (labels.length === 0) return { ok: true, entities: [] };
+
   let response: Response;
   try {
     response = await fetch(endpoint(config.baseUrl, ANALYZE_PATH), {
@@ -98,7 +102,7 @@ export async function analyze(
       },
       body: JSON.stringify({
         text: request.text,
-        entities: labelsFor(request.types),
+        entities: labels,
         phone_regions: request.phoneRegions,
       }),
       signal: AbortSignal.timeout(config.timeoutMs),
