@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { type LabelPolicy, toGold } from "./policy";
+import { assertUniqueIds, type LabelPolicy, toGold } from "./policy";
 
 const POLICY: LabelPolicy = {
   name: "PERSON",
@@ -68,4 +68,21 @@ it("refuses a label the policy does not name", () => {
   expect(() =>
     toGold(TEXT, [{ label: "nickname", start: 2, end: 7 }], POLICY, true),
   ).toThrow("Label without a policy: nickname");
+});
+
+it("refuses a source whose case ids repeat", () => {
+  const item = {
+    id: "redact:1",
+    source: "redact",
+    language: "es",
+    genre: "email",
+    group: "pattern:x",
+    text: "",
+    mask: [],
+    keep: [],
+    ignore: [],
+  };
+  expect(() =>
+    assertUniqueIds("redact", [item, { ...item, text: "other" }]),
+  ).toThrow("Duplicate case id in redact: redact:1");
 });

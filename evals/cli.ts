@@ -22,10 +22,21 @@ import { cacheDir, cloneAtCommit, fetchPinned } from "./sources/fetch";
 import { loadGretel } from "./sources/gretel";
 import { loadKiji } from "./sources/kiji";
 import { GRETEL, KIJI, REDACT } from "./sources/pins";
-import type { Loaded } from "./sources/policy";
+import { assertUniqueIds, type Loaded } from "./sources/policy";
 import { loadRedact } from "./sources/redact";
 
 const MANIFEST = "evals/manifest.json";
+
+function checked(
+  name: string,
+  load: (root: string) => Promise<Loaded>,
+): (root: string) => Promise<Loaded> {
+  return async (root) => {
+    const loaded = await load(root);
+    assertUniqueIds(name, loaded.cases);
+    return loaded;
+  };
+}
 
 const EXTERNAL: Readonly<
   Record<
@@ -40,17 +51,17 @@ const EXTERNAL: Readonly<
   redact: {
     revision: REDACT.commit,
     groupNote: "target pattern",
-    load: loadRedact,
+    load: checked("redact", loadRedact),
   },
   kiji: {
     revision: KIJI.revision,
     groupNote: "record (no family key published)",
-    load: loadKiji,
+    load: checked("kiji", loadKiji),
   },
   gretel: {
     revision: GRETEL.revision,
     groupNote: "document type and subtype",
-    load: loadGretel,
+    load: checked("gretel", loadGretel),
   },
 };
 
@@ -442,6 +453,11 @@ function renderNoise(
   ].join("\n");
 }
 
+const USAGE =
+  "Usage: pnpm evals fetch | stats | sample | run [--split dev|holdout] " +
+  "[--sources home,redact,kiji,gretel] [--modes off,on] [--report file] " +
+  "| noise [--repeat 3] [--restarted] [--report file] | help";
+
 async function main(): Promise<void> {
   const [command, ...args] = process.argv.slice(2);
   if (command === "fetch") return fetchAll();
@@ -449,11 +465,10 @@ async function main(): Promise<void> {
   if (command === "sample") return sample();
   if (command === "run") return evaluate(args);
   if (command === "noise") return noise(args);
-  throw new HarnessError(
-    "Usage: pnpm evals fetch | stats | sample | run [--split dev|holdout] " +
-      "[--sources home,redact,kiji,gretel] [--modes off,on] [--report file] " +
-      "| noise [--repeat 3] [--restarted] [--report file]",
-  );
+  // CI runs `help`: every module is imported before it returns, which tsc and
+  // vitest cannot prove for Node's own type stripping and resolver.
+  if (command === "help") return console.log(USAGE);
+  throw new HarnessError(USAGE);
 }
 
 /** Only messages this harness wrote are printed: a parser's message can

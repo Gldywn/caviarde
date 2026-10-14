@@ -34,6 +34,10 @@ jobs:
       # Integration tests skip themselves without a detector, which CI has none of.
       - run: pnpm test
 
+      # Loads every harness module through Node's own type stripping, which
+      # neither vitest nor tsc exercises.
+      - run: pnpm evals help
+
       - run: pnpm exec eslint src evals
 
       - run: pnpm exec prettier --check src evals

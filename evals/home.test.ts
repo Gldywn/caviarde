@@ -6,8 +6,9 @@ import {
 import type { Region } from "./cases";
 import { isLuhnValid } from "../src/detection/validators/luhn";
 import { maskText } from "../src/mask-text";
+import type { Span } from "../src/detection/types";
 import { HOME_CASES } from "./home";
-import { scoreCase } from "./score";
+import { placeholdersOf, scoreCase } from "./score";
 
 const BASE_URL = process.env.CAVIARDE_DETECTOR_URL ?? "http://127.0.0.1:5002";
 
@@ -28,6 +29,19 @@ const LIVE: SemanticOptions = {
   maskLocations: true,
   maskOrganizations: true,
 };
+
+/** The scorer numbers placeholders by replaying applyMasking; rebuilding the
+ * masked text from that replay ties it to what production actually pasted. */
+function replayed(text: string, spans: readonly Span[]): string {
+  const placeholders = placeholdersOf(text, spans);
+  let masked = text;
+  for (const span of [...spans].sort((a, b) => b.start - a.start))
+    masked =
+      masked.slice(0, span.start) +
+      (placeholders.get(span) ?? "") +
+      masked.slice(span.end);
+  return masked;
+}
 
 function positions(spans: readonly (Region & { type: string })[]) {
   return spans
@@ -69,6 +83,7 @@ describe("home dataset, deterministic layer only", () => {
       expect(fetch).not.toHaveBeenCalled();
       expect(result.semanticSkipped).toBe("disabled");
       expect(positions(result.spans)).toEqual(positions(item.mask));
+      expect(replayed(item.text, result.spans)).toBe(result.masked);
       expect(scoreCase(item, result).placeholders).toMatchObject({
         split: 0,
         merged: 0,
@@ -107,6 +122,10 @@ describe("home dataset, live detector", () => {
         leaked: score.leaked,
         destroyed: score.keep.destroyed,
       }).toEqual({ leaked: 0, destroyed: 0 });
+      expect(replayed(item.text, result.spans)).toBe(result.masked);
+      // A text with nothing to mask must come back unchanged, as the migrated
+      // identifier cases did: over-masking elsewhere is measured, not gated.
+      if (item.mask.length === 0) expect(result.masked).toBe(item.text);
     });
   }
 });

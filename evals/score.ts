@@ -64,7 +64,7 @@ export function overlap(a: Region, b: Region): number {
 }
 
 /** Replays production numbering: the order and the key applyMasking uses. */
-function placeholdersOf(
+export function placeholdersOf(
   text: string,
   spans: readonly Span[],
 ): Map<Span, string> {

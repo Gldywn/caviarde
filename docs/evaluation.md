@@ -103,10 +103,13 @@ Some decisions depend on the value:
 - gold cards that fail Luhn and gold IBANs that fail mod-97 are ignored, since
   real ones always pass and a generator's invalid ones would measure the
   generator; the issuer prefix Caviarde also requires is not demanded of gold;
+- a gold card that is not a full 12 to 19 digit number, such as the last four
+  digits, is ignored: Caviarde does not claim to mask a truncated card;
 - loopback, unspecified and link-local addresses are ignored, matching the
   product rule;
 - REDACT mentions marked `disclosed: false` (hypotheticals, templates) and
-  obfuscated forms are ignored; partial forms stay in scope;
+  obfuscated forms are ignored; partial forms stay in scope, subject to the
+  card rule above;
 - a REDACT `Account_Statements` value counts as an IBAN only when it passes
   mod-97.
 

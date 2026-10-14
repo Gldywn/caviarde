@@ -78,7 +78,6 @@ interface RedactEntity {
 }
 
 interface RedactRecord {
-  readonly record_id: number | string;
   readonly text: string;
   readonly target_pattern_id: string;
   readonly axes: { readonly language: string; readonly format: string };
@@ -115,7 +114,7 @@ export async function loadRedact(root: string): Promise<Loaded> {
   const quarantined = new Map<string, number>();
   const excluded = new Map<string, number>();
 
-  for (const record of records) {
+  for (const [index, record] of records.entries()) {
     const language = record.axes.language.toLowerCase();
     const gold = toGold(
       record.text,
@@ -135,7 +134,9 @@ export async function loadRedact(root: string): Promise<Loaded> {
     }
     for (const reason of gold.excluded) countInto(excluded, reason);
     cases.push({
-      id: `redact:${record.record_id}`,
+      // `record_id` repeats across up to three different records; the position
+      // in the pinned file does not.
+      id: `redact:${index}`,
       source: REDACT.name,
       language,
       genre: record.axes.format,

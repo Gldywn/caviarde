@@ -19,9 +19,8 @@ export type LabelPolicy = Readonly<
 function refusal(type: EntityType, value: string): string | null {
   if (type === "CARD") {
     const digits = value.replace(/[ -]/g, "");
-    return /^\d{12,19}$/.test(digits) && isLuhnValid(digits)
-      ? null
-      : "CARD failing Luhn";
+    if (!/^\d{12,19}$/.test(digits)) return "CARD not a full number";
+    return isLuhnValid(digits) ? null : "CARD failing Luhn";
   }
   if (type === "IBAN") return isIbanValid(value) ? null : "IBAN failing mod-97";
   if (type === "IP" && isNonIdentifyingIp(value)) return "non-identifying IP";
@@ -142,4 +141,15 @@ export interface Loaded {
 
 export function countInto(map: Map<string, number>, key: string): void {
   map.set(key, (map.get(key) ?? 0) + 1);
+}
+
+/** Ids key the sample, the run and the pairing of both modes: a repeated id
+ * would silently score one record in place of another. */
+export function assertUniqueIds(source: string, cases: readonly Case[]): void {
+  const seen = new Set<string>();
+  for (const item of cases) {
+    if (seen.has(item.id))
+      throw new HarnessError(`Duplicate case id in ${source}: ${item.id}`);
+    seen.add(item.id);
+  }
 }
