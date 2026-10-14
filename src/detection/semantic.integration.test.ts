@@ -1,8 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { applyMasking } from "../masking/apply";
-import { propagateFirstNames } from "./coreference";
-import { detectDeterministic } from "./deterministic";
-import { mergeSpans } from "./merge";
+import { maskText } from "../mask-text";
 import { IDENTIFIER_CASES } from "./identifiers.fixture";
 import { detectSemantic, type SemanticOptions } from "./semantic";
 
@@ -58,20 +55,17 @@ describe("live detector", () => {
 
     const text =
       "Marie Dubois a Lyon signale un souci. Contact marie.dubois@acme-solutions.fr " +
-      "ou 06 12 34 56 78. IBAN FR7630006000011234567890189, SIRET 12345678200010.";
+      "ou 06 12 34 56 78. IBAN FR7630006000011234567890189, SIRET 12345678200010. " +
+      "Marie rappelle demain.";
 
-    const semantic = await detectSemantic(text, OPTIONS);
-    expect(semantic.ok).toBe(true);
-    if (!semantic.ok) return;
+    const { masked, counts, semanticSkipped } = await maskText(text, OPTIONS);
+    expect(semanticSkipped).toBeNull();
 
-    const spans = mergeSpans([...detectDeterministic(text), ...semantic.spans]);
-    const { masked, counts } = applyMasking(text, spans);
-
-    expect(masked).toContain("[PERSON_1]");
+    expect(masked).toContain(". [PERSON_1] rappelle");
     expect(masked).toContain("[EMAIL_1]");
     expect(masked).toContain("[IBAN_1]");
     expect(masked).toContain("[SIRET_1]");
-    expect(masked).not.toContain("Marie Dubois");
+    expect(masked).not.toContain("Marie");
     expect(masked).not.toContain("acme-solutions.fr");
     expect(masked).not.toContain("12345678200010");
     expect(counts.get("PERSON")).toBe(1);
@@ -151,19 +145,9 @@ describe("live detector", () => {
     it(`leaves a ${name} alone with the detector running`, async ({ skip }) => {
       if (!detectorUp) skip();
 
-      const semantic = await detectSemantic(text, OPTIONS);
-      expect(semantic.ok).toBe(true);
-      if (!semantic.ok) return;
-
-      const merged = mergeSpans([
-        ...detectDeterministic(text),
-        ...semantic.spans,
-      ]);
-      const spans = mergeSpans([
-        ...merged,
-        ...propagateFirstNames(text, merged),
-      ]);
-      expect(applyMasking(text, spans).masked).toBe(text);
+      const result = await maskText(text, OPTIONS);
+      expect(result.semanticSkipped).toBeNull();
+      expect(result.masked).toBe(text);
     });
   }
 });

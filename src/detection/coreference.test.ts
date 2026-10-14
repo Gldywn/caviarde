@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyMasking } from "../masking/apply";
 import { propagateFirstNames } from "./coreference";
-import { detectDeterministic } from "./deterministic";
-import { mergeSpans } from "./merge";
 import type { EntityType, Span } from "./types";
 
 function spanOf(
@@ -74,19 +71,6 @@ describe("propagateFirstNames", () => {
     expect(
       propagateFirstNames(text, [spanOf(text, "Camille Rousseau")]),
     ).toHaveLength(2);
-  });
-
-  it("carries a mention through to the lone first name, no detector involved", () => {
-    const text =
-      "car la demande de Camille entrainerait un surcout.\n@Camille Rousseau on peut modifier.";
-    const spans = mergeSpans(detectDeterministic(text));
-    const all = mergeSpans([...spans, ...propagateFirstNames(text, spans)]);
-    const { masked, counts } = applyMasking(text, all);
-
-    expect(masked).toBe(
-      "car la demande de [PERSON_1] entrainerait un surcout.\n@[PERSON_1] on peut modifier.",
-    );
-    expect(counts.get("PERSON")).toBe(1);
   });
 
   it("ignores non-person spans", () => {
