@@ -1,9 +1,9 @@
-import { execFile } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, realpathSync } from "node:fs";
+import { existsSync, realpathSync, statSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
-import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { promisify } from "node:util";
 import { HarnessError } from "../cases";
 
@@ -15,15 +15,38 @@ function real(path: string): string {
   return join(realpathSync(existing), relative(existing, resolve(path)));
 }
 
-/** Outside the repository, symlinks resolved: external data is never
- * committed, and `ray publish` ships whatever sits in the working copy. */
+/** By device and inode, not by spelling: APFS ignores case and Unicode
+ * normalisation, so two different strings can name the repository. */
+export function isInside(path: string, root: string): boolean {
+  const { dev, ino } = statSync(root);
+  for (let current = real(path); ; current = dirname(current)) {
+    if (existsSync(current)) {
+      const stat = statSync(current);
+      if (stat.dev === dev && stat.ino === ino) return true;
+    }
+    if (dirname(current) === current) return false;
+  }
+}
+
+function repositoryRoot(): string {
+  try {
+    return execFileSync("git", ["rev-parse", "--show-toplevel"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return process.cwd();
+  }
+}
+
+/** External data is never committed, and `ray publish` ships whatever sits
+ * in the working copy. */
 export function cacheDir(): string {
   const dir = real(
     process.env.CAVIARDE_EVAL_CACHE ??
       join(homedir(), ".cache", "caviarde-evals"),
   );
-  const fromRepo = relative(real(process.cwd()), dir);
-  if (!isAbsolute(fromRepo) && fromRepo.split(sep)[0] !== "..")
+  if (isInside(dir, repositoryRoot()))
     throw new HarnessError(
       "The evaluation cache must be outside the repository",
     );
