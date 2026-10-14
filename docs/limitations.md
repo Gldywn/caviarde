@@ -26,6 +26,10 @@ to begin with an issuer prefix, so a number outside those ranges is left alone
 even when its check digit is right. The cost is the reverse case, a card from an
 issuer outside the listed ranges, which is not masked at all.
 
+One gap remains: a SIRET is accepted on its checksum alone, so a bare
+fourteen-digit number that passes Luhn is masked, as described under SIREN and
+SIRET.
+
 The semantic layer follows the same rules. The detector runs its own structured
 pass, and that pass is checksum-only, so its cards and IBANs are re-validated
 here before being accepted. Without that, turning the detector on would mask the
@@ -66,15 +70,19 @@ Luhn, about one in ten, is masked as a SIRET: a compact timestamp such as
 
 ## French phone numbers
 
-The deterministic layer recognises French national numbers and international
-`+` numbers written with no separators or with ordinary spaces, dots or hyphens
-between digits, whatever the `phoneRegions` preference says. Other layouts,
-such as digit groups separated by a non-breaking space, which French typography
-uses, or a trunk zero in brackets as in `+33 (0)1 23 45 67 89`, rely on the
-formats the detector supports, and `phoneRegions` supplies its region hints for
-national numbers. Those hints have no effect without a successful detector
-response, and no request is made when the text is over the semantic size limit
-or when all three semantic preferences are off.
+The deterministic layer recognises, whatever the `phoneRegions` preference says,
+French national numbers written as five pairs of digits (`01 23 45 67 89`) and
+international `+` numbers, with nothing or an ordinary space, dot or hyphen as
+separator.
+
+Other layouts rely on the formats the detector supports: another grouping
+(`0 800 123 456`), groups separated by a non-breaking space, as French
+typography writes them, or a trunk zero in brackets (`+33 (0)1 23 45 67 89`).
+Groups separated by a narrow non-breaking space (U+202F) are missed by both
+layers. `phoneRegions` supplies the detector's region hints for national
+numbers. Those hints have no effect without a successful detector response, and
+no request is made when the text is over the semantic size limit or when all
+three semantic preferences are off.
 
 ## Confidence thresholds are a tuning choice
 
