@@ -391,6 +391,66 @@ function ingestion(summary: Summary): string {
   );
 }
 
+const COMPARED_METRICS: ReadonlyArray<[string, Metric]> = [
+  ["Leaked chars", leakMicro],
+  ["Leaked per mention", leakMacro],
+  ["Over-masking", overMasking],
+];
+
+/** Paired by group over the same cases. A timeout follows the machine's load,
+ * not the configuration, so a case that timed out in either run is left out. */
+export function renderComparison(
+  candidate: readonly CaseRecord[],
+  reference: readonly CaseRecord[],
+): string {
+  const key = (s: CaseScore) => JSON.stringify([s.source, s.id]);
+  const timedOut = new Map(
+    [...byMode(candidate, "on"), ...byMode(reference, "on")]
+      .filter((s) => s.skipped === "timeout")
+      .map((s) => [key(s), s.source]),
+  );
+  const answered = (records: readonly CaseRecord[]) =>
+    groupBy(
+      byMode(records, "on").filter((s) => !timedOut.has(key(s))),
+      (s) => s.source,
+    );
+  const a = answered(candidate);
+  const z = answered(reference);
+  const rows = [...new Set([...a.keys(), ...z.keys()])].flatMap((source) =>
+    COMPARED_METRICS.map(([name, metric]) => {
+      const left = a.get(source) ?? [];
+      const right = z.get(source) ?? [];
+      const x = metric(left);
+      const y = metric(right);
+      const bounds = pairedInterval(left, right, metric);
+      return [
+        source,
+        name,
+        pct(x),
+        pct(y),
+        x === null || y === null ? "n/a" : pct(x - y),
+        bounds === null ? "n/a" : `[${pct(bounds[0])}, ${pct(bounds[1])}]`,
+      ];
+    }),
+  );
+  const left = new Map<string, number>();
+  for (const source of timedOut.values())
+    left.set(source, (left.get(source) ?? 0) + 1);
+  return (
+    table(
+      [
+        "Source",
+        "Figure",
+        "Candidate",
+        "Reference",
+        "Difference",
+        "95 % interval",
+      ],
+      rows,
+    ) + `\n\nLeft out, timed out in either run: ${count(left)}.`
+  );
+}
+
 /** Aggregates and opaque ids only: per-case details stay in the cache. */
 export function renderReport(summary: Summary): string {
   const bySource = groupBy(summary.records, (r) => r.score.source);

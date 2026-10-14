@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { type Case, HarnessError } from "./cases";
 import { HOME_CASES } from "./home";
-import { renderReport, type SourceIngestion } from "./report";
+import { renderComparison, renderReport, type SourceIngestion } from "./report";
 import {
   type CaseRecord,
   describeEnvironment,
@@ -453,10 +453,35 @@ function renderNoise(
   ].join("\n");
 }
 
+async function readRecords(dir: string): Promise<CaseRecord[]> {
+  const lines = (await readFile(join(dir, "scores.jsonl"), "utf8")).split("\n");
+  return lines
+    .filter((line) => line.length > 0)
+    .map((line) => JSON.parse(line) as CaseRecord);
+}
+
+async function compare(args: string[]): Promise<void> {
+  const { values, positionals } = parseArgs({
+    args,
+    options: { report: OPTIONS.report },
+    allowPositionals: true,
+  });
+  const [candidate, reference] = positionals;
+  if (positionals.length !== 2 || !candidate || !reference)
+    throw new HarnessError("compare takes a candidate run and a reference run");
+  const report = renderComparison(
+    await readRecords(candidate),
+    await readRecords(reference),
+  );
+  if (values.report) await writeFile(values.report, `${report}\n`);
+  console.log(report);
+}
+
 const USAGE =
   "Usage: pnpm evals fetch | stats | sample | run [--split dev|holdout] " +
   "[--sources home,redact,kiji,gretel] [--modes off,on] [--report file] " +
-  "| noise [--repeat 3] [--restarted] [--report file] | help";
+  "| noise [--repeat 3] [--restarted] [--report file] " +
+  "| compare <candidate run> <reference run> [--report file] | help";
 
 async function main(): Promise<void> {
   const [command, ...args] = process.argv.slice(2);
@@ -465,6 +490,7 @@ async function main(): Promise<void> {
   if (command === "sample") return sample();
   if (command === "run") return evaluate(args);
   if (command === "noise") return noise(args);
+  if (command === "compare") return compare(args);
   // CI runs `help`: every module is imported before it returns, which tsc and
   // vitest cannot prove for Node's own type stripping and resolver.
   if (command === "help") return console.log(USAGE);

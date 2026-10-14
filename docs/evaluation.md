@@ -156,6 +156,22 @@ file of details per source and mode under `runs/<timestamp>/` in the cache. Per-
 leaked values, stay there. The repository holds aggregate reports and opaque
 record ids only.
 
+Two configurations are compared from two runs over the same cases, detector
+on, with the difference bootstrapped on the same resampled groups:
+
+```bash
+pnpm evals compare <candidate run directory> <reference run directory>
+```
+
+A case that timed out in either run is left out of both, and counted: how
+long inference takes depends on the machine's load and on the detector's
+cache, not on the confidence floors, so a timeout in one run only would credit
+or blame the configuration for the machine.
+
+A run's `environment.json` does not record confidence floors set by a compose
+override file, so the floors each compared run was started with have to be
+recorded alongside it.
+
 ### Noise check
 
 `pnpm evals noise` replays a frozen sample, the home dataset and six
