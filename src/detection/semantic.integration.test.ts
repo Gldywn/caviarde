@@ -53,16 +53,17 @@ describe("live detector", () => {
 
     const text =
       "Marie Dubois a Lyon signale un souci. Contact marie.dubois@acme-solutions.fr " +
-      "ou 06 12 34 56 78. IBAN FR7630006000011234567890189, SIRET 12345678200010.";
+      "ou 06 12 34 56 78. IBAN FR7630006000011234567890189, SIRET 12345678200010. " +
+      "Marie rappelle demain.";
 
     const { masked, counts, semanticSkipped } = await maskText(text, OPTIONS);
     expect(semanticSkipped).toBeNull();
 
-    expect(masked).toContain("[PERSON_1]");
+    expect(masked).toContain(". [PERSON_1] rappelle");
     expect(masked).toContain("[EMAIL_1]");
     expect(masked).toContain("[IBAN_1]");
     expect(masked).toContain("[SIRET_1]");
-    expect(masked).not.toContain("Marie Dubois");
+    expect(masked).not.toContain("Marie");
     expect(masked).not.toContain("acme-solutions.fr");
     expect(masked).not.toContain("12345678200010");
     expect(counts.get("PERSON")).toBe(1);
