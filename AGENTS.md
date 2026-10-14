@@ -23,6 +23,13 @@ Identifiers are sequential (`123456782`,
 `12345678200010`, `01.23.45.67.89`) so that no reader mistakes them for real
 allocations.
 
+For the other languages the evaluation covers, the cast adds Emily Clarke
+(en), Jonas Becker and Lena von Schneider (de), Lucía Fernández (es), João dos
+Santos (pt), Giulia di Romano (it), Sanne de Vries and Daan van den Berg (nl),
+and Acme Logistik GmbH. Their phone numbers stay sequential (`+44 20 1234 5678`,
+`+49 30 12345678`), and their IBANs are the published documentation examples
+(`DE89370400440532013000`, `NL91ABNA0417164300`, `ES9121000418450200051332`).
+
 Secret-shaped fixtures (AWS key ids, JWTs, PEM blocks) are the one exception:
 the detectors cannot be proven without them. They live in `src/**/*.test.ts`,
 are excluded from GitHub secret-scanning **alerts** by
@@ -51,8 +58,8 @@ persistence.
   of an email leaves the domain live.
 - **Technical identifiers must survive masking.** UUIDs, object ids, numeric user
   and company ids, timestamps, git SHAs, loopback addresses. Masked text that
-  cannot be used for a database query has failed. `identifiers.test.ts` locks
-  this in.
+  cannot be used for a database query has failed. The home dataset
+  (`evals/home.ts`) locks this in, with and without the detector.
 - **A checksum alone never qualifies a match.** Luhn is one digit, so about one
   arbitrary number in ten passes it: a card needs an issuer prefix as well, a
   bare SIREN needs a keyword or its spaced form. Where a test asserts that some

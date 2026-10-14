@@ -1,6 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { maskText } from "../mask-text";
-import { IDENTIFIER_CASES } from "./identifiers.fixture";
 import { detectSemantic, type SemanticOptions } from "./semantic";
 
 const BASE_URL = process.env.CAVIARDE_DETECTOR_URL ?? "http://127.0.0.1:5002";
@@ -151,17 +150,4 @@ describe("live detector", () => {
     const result = await detectSemantic("x".repeat(6_001), OPTIONS);
     expect(result).toEqual({ ok: false, reason: "too-large" });
   });
-
-  /** The invariant was locked on the deterministic layer alone, which is how a
-   * Luhn-valid timestamp came back as a card once the model was enabled. This
-   * runs the whole pipeline, the layer that actually reaches the clipboard. */
-  for (const [name, text] of IDENTIFIER_CASES) {
-    it(`leaves a ${name} alone with the detector running`, async ({ skip }) => {
-      if (!detectorUp) skip();
-
-      const result = await maskText(text, OPTIONS);
-      expect(result.semanticSkipped).toBeNull();
-      expect(result.masked).toBe(text);
-    });
-  }
 });

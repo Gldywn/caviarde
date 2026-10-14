@@ -32,8 +32,8 @@ The CI checks can be run locally from the repository root:
 
 ```bash
 mise exec -- pnpm test
-mise exec -- pnpm exec eslint src
-mise exec -- pnpm exec prettier --check src
+mise exec -- pnpm exec eslint src evals
+mise exec -- pnpm exec prettier --check src evals
 mise exec -- pnpm run build --output dist --non-interactive
 ```
 
