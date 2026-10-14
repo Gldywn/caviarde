@@ -63,6 +63,8 @@ src/
   summary.ts                 HUD text
   detection/
     types.ts                 EntityType, Span
+    finder.ts                Finder type, and simple() for a regex finder
+    fr.ts                    French finders: SIRET, SIREN, national phone numbers
     deterministic.ts         regex and checksum layer, including @mentions
     semantic.ts              detector results revalidated and bounded into spans
     coreference.ts           first-name propagation

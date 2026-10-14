@@ -1,6 +1,7 @@
-import type { EntityType, Span } from "./types";
+import { type Finder, simple } from "./finder";
+import { findFrenchPhone, findSiren, findSiret } from "./fr";
+import type { Span } from "./types";
 import { isCardNumber } from "./validators/card";
-import { isSirenValid, isSiretValid } from "./validators/french-business";
 import { isIbanValid } from "./validators/iban";
 import { isMaskableIpv4, isMaskableIpv6 } from "./validators/ip";
 
@@ -37,44 +38,9 @@ const IPV4 = /(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?!\d)(?!\.\d)/g;
 const IBAN_CANDIDATE =
   /(?<![A-Za-z0-9])[A-Za-z]{2}\d{2}(?:[ ]?[A-Za-z0-9]){11,30}(?![A-Za-z0-9])/g;
 
-const SIRET_CANDIDATE = /(?<!\d)\d{3}[ ]?\d{3}[ ]?\d{3}[ ]?\d{5}(?!\d)/g;
-const SIREN_CANDIDATE = /(?<!\d)\d{3}[ ]?\d{3}[ ]?\d{3}(?!\d)/g;
-/** A random 9-digit number passes Luhn one time in ten, and documents are full of them. */
-const SIREN_CONTEXT =
-  /(?:siren|siret|rcs|immatricul|greffe)[^\p{L}\p{N}]{0,12}$/iu;
-const SIREN_CONTEXT_WINDOW = 32;
-
 const CARD_CANDIDATE = /(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)/g;
 
 const PHONE_INTERNATIONAL = /(?<![\d+])\+\d{1,3}(?:[ .-]?\d){6,14}(?!\d)/g;
-const PHONE_FRENCH = /(?<![\d+])0[1-9](?:[ .-]?\d{2}){4}(?!\d)/g;
-
-function digitsOf(value: string): string {
-  return value.replace(/\D/g, "");
-}
-
-type Finder = (text: string) => Span[];
-
-function simple(
-  type: EntityType,
-  pattern: RegExp,
-  accept?: (match: string) => boolean,
-): Finder {
-  return (text) => {
-    const found: Span[] = [];
-    for (const match of text.matchAll(pattern)) {
-      if (match.index === undefined) continue;
-      if (accept && !accept(match[0])) continue;
-      found.push({
-        type,
-        start: match.index,
-        end: match.index + match[0].length,
-        layer: "deterministic",
-      });
-    }
-    return found;
-  };
-}
 
 /** The candidate can run past the IBAN into prose, so trailing tokens are trimmed
  * off until what remains validates. */
@@ -100,31 +66,8 @@ const findIban: Finder = (text) => {
   return found;
 };
 
-const findSiren: Finder = (text) => {
-  const found: Span[] = [];
-  for (const match of text.matchAll(SIREN_CANDIDATE)) {
-    if (match.index === undefined) continue;
-    if (!isSirenValid(digitsOf(match[0]))) continue;
-
-    const before = text.slice(
-      Math.max(0, match.index - SIREN_CONTEXT_WINDOW),
-      match.index,
-    );
-    const spaced = match[0].includes(" ");
-    if (!spaced && !SIREN_CONTEXT.test(before)) continue;
-
-    found.push({
-      type: "SIREN",
-      start: match.index,
-      end: match.index + match[0].length,
-      layer: "deterministic",
-    });
-  }
-  return found;
-};
-
-/** Priority order. A later finder never claims a range an earlier one took, so a
- * 14-digit SIRET is not also reported as a card. */
+/** Priority order: a later finder never claims a range an earlier one took. A
+ * SIRET can pass the card check and a spaced one starts with a SIREN, so it leads both. */
 const FINDERS: readonly Finder[] = [
   simple("PRIVATE_KEY", PEM_BLOCK),
   simple("JWT", JWT),
@@ -134,11 +77,11 @@ const FINDERS: readonly Finder[] = [
   simple("IP", IPV6_CANDIDATE, isMaskableIpv6),
   simple("IP", IPV4, isMaskableIpv4),
   findIban,
-  simple("SIRET", SIRET_CANDIDATE, (m) => isSiretValid(digitsOf(m))),
+  findSiret,
   findSiren,
   simple("CARD", CARD_CANDIDATE, isCardNumber),
   simple("PHONE", PHONE_INTERNATIONAL),
-  simple("PHONE", PHONE_FRENCH),
+  findFrenchPhone,
 ];
 
 export function detectDeterministic(text: string): Span[] {
