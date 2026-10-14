@@ -1,9 +1,5 @@
 import { Clipboard, getPreferenceValues, showHUD } from "@raycast/api";
-import { propagateFirstNames } from "./detection/coreference";
-import { detectDeterministic } from "./detection/deterministic";
-import { mergeSpans } from "./detection/merge";
-import { detectSemantic } from "./detection/semantic";
-import { applyMasking } from "./masking/apply";
+import { maskText } from "./mask-text";
 import { toSettings } from "./preferences";
 import { buildSummary } from "./summary";
 
@@ -31,9 +27,7 @@ export default async function maskAndPaste(): Promise<void> {
 
   const settings = toSettings(getPreferenceValues<Preferences.MaskAndPaste>());
 
-  const spans = [...detectDeterministic(text)];
-
-  const semantic = await detectSemantic(text, {
+  const { masked, counts, semanticSkipped } = await maskText(text, {
     baseUrl: settings.detectorUrl,
     timeoutMs: settings.detectorTimeoutMs,
     authToken: settings.authToken,
@@ -43,15 +37,6 @@ export default async function maskAndPaste(): Promise<void> {
     maskOrganizations: settings.maskOrganizations,
   });
 
-  if (semantic.ok) spans.push(...semantic.spans);
-
-  const merged = mergeSpans(spans);
-  const withFirstNames = mergeSpans([
-    ...merged,
-    ...propagateFirstNames(text, merged),
-  ]);
-  const { masked, counts } = applyMasking(text, withFirstNames);
-
   try {
     await Clipboard.paste(masked);
   } catch {
@@ -59,5 +44,5 @@ export default async function maskAndPaste(): Promise<void> {
     return;
   }
 
-  await showHUD(buildSummary(counts, !semantic.ok));
+  await showHUD(buildSummary(counts, semanticSkipped !== null));
 }

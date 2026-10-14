@@ -59,6 +59,7 @@ never invalidates a later one.
 ```
 src/
   mask-and-paste.ts          command entry point
+  mask-text.ts               the masking pipeline, free of @raycast/api so it can be tested
   preferences.ts             preference parsing, pure
   summary.ts                 HUD text
   detection/
