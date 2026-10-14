@@ -65,7 +65,7 @@ src/
   detection/
     types.ts                 EntityType, Span
     deterministic.ts         regex and checksum layer, including @mentions
-    semantic.ts              detector spans mapped to the local entity types
+    semantic.ts              detector results revalidated and bounded into spans
     coreference.ts           first-name propagation
     merge.ts                 overlap resolution
     validators/
@@ -76,10 +76,11 @@ src/
       french-business.ts     SIREN, SIRET
   setup-detector.tsx         the Set up Detector command
   detector/
-    client.ts                the single HTTP module
+    client.ts                the single HTTP module, vendor labels to local types
     image.ts                 pinned digest, thresholds, docker probe paths
     endpoint.ts              which Detector URLs the setup command can manage
-    docker.ts                container lifecycle
+    docker.ts                container lifecycle, pull journal and liveness
+    setup.ts                 Set up Detector decisions, side effects injected
   masking/
     placeholders.ts          [TYPE_N] assignment
     apply.ts                 right-to-left replacement
