@@ -147,7 +147,8 @@ Verification records actual checks, skipped tests and remaining limitations.
 `docs/limitations.md` for what is knowingly not detected,
 `docs/security-notes.md` for the detector image audit and why it is pinned,
 `docs/detector-patch.md` for the organisation label and its Apache-2.0
-attribution.
+attribution, `docs/evaluation.md` for the evaluation harness, its corpora and
+what each figure means.
 
 Documentation is written for someone receiving the project, not for whoever is
 working on it. No plans, no open questions, no second person, no notes to self.

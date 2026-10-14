@@ -46,6 +46,10 @@ A bare first name with no full-name anchor and no `@` is not detected. The model
 scores an isolated first name far below the threshold that ordinary French nouns
 already reach, so no threshold separates them.
 
+A mention stops at the first lowercase word that is not a single particle, so
+`@Daan van den Berg` masks `Daan` only and leaves `van den Berg`: the pattern
+allows one particle before each capitalised word, not two in a row.
+
 ## Organisations
 
 Company names are detected only when the detector runs the patch described in
@@ -67,6 +71,11 @@ construction, La Poste excepted) and does not detect a SIREN at all.
 A SIRET needs no keyword or spacing, so a bare fourteen-digit number that passes
 Luhn, about one in ten, is masked as a SIRET: a compact timestamp such as
 `20241014125302`, or a fourteen-digit order number.
+
+A bare SIREN needs its keyword right before the number, separated by
+punctuation or spaces only: `SIREN 123456782` and `RCS : 123456782` are masked, `RCS Lyon
+123456782` is not, because a word stands between them. The spaced form
+`RCS Lyon B 123 456 782` is masked regardless.
 
 ## Phone numbers
 
@@ -99,5 +108,6 @@ one of them to the list trades that identifier risk for its national format.
 
 The thresholds set in `compose.yaml` were chosen from a small sample of synthetic
 French text, not from a benchmark. Different text will behave differently. The
-upstream repository ships `benchmarks/pii-accuracy`, which runs a labelled corpus
-against a live detector and is the right tool for calibrating them properly.
+evaluation harness described in `evaluation.md` measures them against three
+public corpora per language, with run-to-run noise measured alongside; its
+baseline is the reference any threshold change has to be compared with.

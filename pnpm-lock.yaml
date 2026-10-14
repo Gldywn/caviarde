@@ -24,6 +24,9 @@ importers:
       eslint:
         specifier: 10.8.0
         version: 10.8.0(supports-color@8.1.1)
+      hyparquet:
+        specifier: 1.31.2
+        version: 1.31.2
       prettier:
         specifier: 3.9.6
         version: 3.9.6
@@ -880,6 +883,9 @@ packages:
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
+
+  hyparquet@1.31.2:
+    resolution: {integrity: sha512-dpVTCGkPPIdfDExa7YZGaJpuBTmLFDKGeZ6meHUj1mz/Q3qmaQHGLLqCyPBkQjfxrYNb08YTax682qeGO+zkVA==}
 
   iconv-lite@0.7.3:
     resolution: {integrity: sha512-IKXpvIzjnC9XTAUbVBcMfGS0EPaIXtW6v+zr+RRp+hqULEpo0owZax6wyRwPOJbWbzjYspQwusTsfVr0ifh4uQ==}
@@ -2116,6 +2122,8 @@ snapshots:
   globals@17.11.0: {}
 
   has-flag@4.0.0: {}
+
+  hyparquet@1.31.2: {}
 
   iconv-lite@0.7.3:
     dependencies:

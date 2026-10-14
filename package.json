@@ -102,6 +102,7 @@
     "@types/node": "24.13.3",
     "@types/react": "19.2.18",
     "eslint": "10.8.0",
+    "hyparquet": "1.31.2",
     "prettier": "3.9.6",
     "typescript": "5.9.3",
     "vitest": "4.1.11"
@@ -112,6 +113,7 @@
     "lint": "ray lint",
     "fix-lint": "ray lint --fix",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "evals": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./evals/register.mjs evals/cli.ts"
   }
 }

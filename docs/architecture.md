@@ -86,9 +86,20 @@ src/
   masking/
     placeholders.ts          [TYPE_N] assignment
     apply.ts                 right-to-left replacement
+evals/                       evaluation harness, outside the bundle (evaluation.md)
+  home.ts                    invented cases in inline markup, iterated by home.test.ts
+  cases.ts                   the one case shape every source is converted to
+  sources/                   pinned corpora, label policies and ingestion checks
+  score.ts                   one case scored from the spans maskText accepted
+  metrics.ts, report.ts      aggregates and group bootstrap
+  sample.ts, manifest.json   group split and pinned sample
+  run.ts, cli.ts             sequential runs, `pnpm evals`
+  register.mjs               lets Node run the TypeScript with no build step
 ```
 
-Tests sit next to what they test.
+Tests sit next to what they test. `maskText` returns the spans it accepted, in
+original coordinates, and the semantic spans the merge dropped, so the
+evaluation scores the pipeline without reading placeholders back.
 
 The two command entry points are the only files that import `@raycast/api`. That
 package has no entry point outside the Raycast runtime, so any module importing

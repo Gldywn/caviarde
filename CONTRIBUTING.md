@@ -47,6 +47,10 @@ Changes to semantic detection, span merging, first-name propagation, technical
 identifier preservation, the detector patch or confidence thresholds need tests
 against a running detector, including an invented example through the whole
 masking pipeline. Mocked responses cannot establish what the model will return.
+Threshold, merge or detector changes are also compared with the evaluation
+baseline in `evals/baseline.md`, through `pnpm evals run` on the development
+split; [docs/evaluation.md](docs/evaluation.md) describes the corpora, the
+figures and the noise those comparisons have to exceed.
 
 `src/detection/semantic.integration.test.ts` probes
 `http://127.0.0.1:5002/health`. Tests that require the detector skip themselves if
