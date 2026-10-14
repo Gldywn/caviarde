@@ -62,9 +62,12 @@ construction, La Poste excepted) and does not detect a SIREN at all.
 
 ## French phone numbers
 
-The detector only sees numbers in international `+` form unless it is given a
-region hint, which the `phoneRegions` preference supplies. The deterministic
-layer recognises the French national format regardless.
+The deterministic layer recognises French national numbers and international
+numbers in the `+` format it supports, whatever the `phoneRegions` preference
+says. Other national formats rely on the detector, which reads them for the
+regions `phoneRegions` lists. That hint has no effect without a successful
+detector response, and no request is made when the text is over the semantic
+size limit or when all three semantic preferences are off.
 
 ## Confidence thresholds are a tuning choice
 

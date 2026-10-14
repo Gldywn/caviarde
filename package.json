@@ -59,7 +59,7 @@
       "type": "textfield",
       "required": false,
       "title": "Phone Regions",
-      "description": "Comma-separated ISO country codes. Without these, only numbers in +33 form are detected.",
+      "description": "Comma-separated ISO country codes whose national phone formats the detector reads. French national and international + numbers are masked either way.",
       "default": "FR"
     },
     {
