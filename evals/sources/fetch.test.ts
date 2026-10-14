@@ -8,7 +8,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it } from "vitest";
-import { isInside } from "./fetch";
+import { checkouts, isInside } from "./fetch";
 
 const made: string[] = [];
 
@@ -43,4 +43,9 @@ it("is not fooled by another spelling of the same directory", () => {
   // Only meaningful on a case-insensitive volume, the macOS default.
   if (!existsSync(shouted)) return;
   expect(isInside(join(shouted, "cache"), repo)).toBe(true);
+});
+
+it("knows the checkout it runs in, and refuses to guess outside one", () => {
+  expect(checkouts().some((root) => isInside(process.cwd(), root))).toBe(true);
+  expect(() => checkouts(scratch())).toThrow("Run from inside the repository");
 });

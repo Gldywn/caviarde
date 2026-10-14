@@ -28,15 +28,27 @@ export function isInside(path: string, root: string): boolean {
   }
 }
 
-function repositoryRoot(): string {
+/** Every checkout of the repository, sibling worktrees included, since any of
+ * them can be committed or published from. Fails closed: an unknown root
+ * would let a relative path back into the repository. */
+export function checkouts(cwd = process.cwd()): string[] {
+  let listing: string;
   try {
-    return execFileSync("git", ["rev-parse", "--show-toplevel"], {
+    listing = execFileSync("git", ["worktree", "list", "--porcelain", "-z"], {
+      cwd,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
+    });
   } catch {
-    return process.cwd();
+    throw new HarnessError(
+      "Run from inside the repository: its checkouts must be known to keep the cache out of them",
+    );
   }
+  return listing
+    .split("\0")
+    .filter((field) => field.startsWith("worktree "))
+    .map((field) => field.slice("worktree ".length))
+    .filter((path) => existsSync(path));
 }
 
 /** External data is never committed, and `ray publish` ships whatever sits
@@ -46,9 +58,9 @@ export function cacheDir(): string {
     process.env.CAVIARDE_EVAL_CACHE ??
       join(homedir(), ".cache", "caviarde-evals"),
   );
-  if (isInside(dir, repositoryRoot()))
+  if (checkouts().some((root) => isInside(dir, root)))
     throw new HarnessError(
-      "The evaluation cache must be outside the repository",
+      "The evaluation cache must be outside every checkout of the repository",
     );
   return dir;
 }

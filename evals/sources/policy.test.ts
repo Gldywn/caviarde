@@ -86,3 +86,16 @@ it("refuses a source whose case ids repeat", () => {
     assertUniqueIds("redact", [item, { ...item, text: "other" }]),
   ).toThrow("Duplicate case id in redact: redact:1");
 });
+
+it("tells a truncated card from one failing Luhn", () => {
+  const gold = toGold(
+    "carte se terminant par 4821",
+    [{ label: "card", start: 23, end: 27 }],
+    POLICY,
+    false,
+  );
+  expect(gold).toMatchObject({
+    ok: true,
+    excluded: ["CARD not a full number"],
+  });
+});
