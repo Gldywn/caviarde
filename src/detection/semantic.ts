@@ -1,9 +1,14 @@
 import {
-  type AnalyzeConfig,
   analyze,
+  type DetectorConfig,
   type DetectorEntity,
 } from "../detector/client";
-import type { EntityType, SemanticSkipReason, Span } from "./types";
+import {
+  ENTITY_TYPES,
+  type EntityType,
+  type SemanticSkipReason,
+  type Span,
+} from "./types";
 import { isCardNumber } from "./validators/card";
 import { isIbanValid } from "./validators/iban";
 import { isNonIdentifyingIp } from "./validators/ip";
@@ -12,19 +17,7 @@ import { isNonIdentifyingIp } from "./validators/ip";
  * skipped whole rather than truncated. */
 export const SEMANTIC_MAX_CHARS = 6_000;
 
-const LABEL_TO_TYPE: Readonly<Record<string, EntityType>> = {
-  PERSON: "PERSON",
-  LOCATION: "LOCATION",
-  ORGANIZATION: "ORGANIZATION",
-  EMAIL_ADDRESS: "EMAIL",
-  PHONE_NUMBER: "PHONE",
-  CREDIT_CARD: "CARD",
-  IBAN_CODE: "IBAN",
-  IP_ADDRESS: "IP",
-  VAT_CODE: "VAT",
-};
-
-export interface SemanticOptions extends AnalyzeConfig {
+export interface SemanticOptions extends DetectorConfig {
   readonly phoneRegions: readonly string[];
   readonly maskPersons: boolean;
   readonly maskLocations: boolean;
@@ -35,16 +28,14 @@ export type SemanticResult =
   | { readonly ok: true; readonly spans: readonly Span[] }
   | { readonly ok: false; readonly reason: SemanticSkipReason };
 
-/** A mistyped label makes the detector return an empty list with no error, so
- * only names it is known to understand are ever sent. */
-function requestedLabels(options: SemanticOptions): string[] {
-  const labels = Object.keys(LABEL_TO_TYPE).filter((label) => {
-    if (label === "PERSON") return options.maskPersons;
-    if (label === "LOCATION") return options.maskLocations;
-    if (label === "ORGANIZATION") return options.maskOrganizations;
+/** Types the detector does not know are left for the client to drop. */
+function requestedTypes(options: SemanticOptions): EntityType[] {
+  return ENTITY_TYPES.filter((type) => {
+    if (type === "PERSON") return options.maskPersons;
+    if (type === "LOCATION") return options.maskLocations;
+    if (type === "ORGANIZATION") return options.maskOrganizations;
     return true;
   });
-  return labels;
 }
 
 const VALIDATORS: Partial<
@@ -56,8 +47,6 @@ const VALIDATORS: Partial<
 };
 
 function toSpan(entity: DetectorEntity, text: string): Span | null {
-  const type = LABEL_TO_TYPE[entity.entity_type];
-  if (type === undefined) return null;
   if (
     entity.start < 0 ||
     entity.end > text.length ||
@@ -69,14 +58,14 @@ function toSpan(entity: DetectorEntity, text: string): Span | null {
   // timestamp as a card. Its spans go through the same validators as the
   // deterministic layer, or enabling the model would undo identifier
   // preservation.
-  const accepts = VALIDATORS[type];
+  const accepts = VALIDATORS[entity.type];
   if (accepts !== undefined && !accepts(text.slice(entity.start, entity.end)))
     return null;
 
-  return { type, start: entity.start, end: entity.end, layer: "semantic" };
+  return { ...entity, layer: "semantic" };
 }
 
-/** Exported so the mapping can be tested without reaching the detector. */
+/** Exported so the revalidation can be tested without reaching the detector. */
 export function entitiesToSpans(
   entities: readonly DetectorEntity[],
   text: string,
@@ -104,7 +93,7 @@ export async function detectSemantic(
   const outcome = await analyze(
     {
       text,
-      entities: requestedLabels(options),
+      types: requestedTypes(options),
       phoneRegions: options.phoneRegions,
     },
     options,

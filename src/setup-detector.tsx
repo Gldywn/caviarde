@@ -11,6 +11,7 @@ import {
 import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { useEffect, useRef, useState } from "react";
+import { isHealthy } from "./detector/client";
 import {
   daemonIsUp,
   findDocker,
@@ -99,22 +100,8 @@ const FACT_ICONS: Record<string, Icon> = {
   Size: Icon.HardDrive,
 };
 
-/** The token goes out here too: a detector that also protects /health works
- * for masking while this screen would call it unreachable. */
-async function detectorAnswers(
-  baseUrl: string,
-  authToken: string,
-): Promise<boolean> {
-  try {
-    const response = await fetch(`${baseUrl.replace(/\/+$/, "")}/health`, {
-      signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS),
-      headers:
-        authToken.length > 0 ? { Authorization: `Bearer ${authToken}` } : {},
-    });
-    return response.ok;
-  } catch {
-    return false;
-  }
+function detectorAnswers(baseUrl: string, authToken: string): Promise<boolean> {
+  return isHealthy({ baseUrl, authToken, timeoutMs: HEALTH_TIMEOUT_MS });
 }
 
 export default function SetUpDetector() {
