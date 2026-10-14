@@ -147,6 +147,13 @@ describe("phone numbers", () => {
     ]);
   });
 
+  it("catches a national number with a bracketed area code", () => {
+    expect(found("call (234) 567-8901 or (234) 567.8902")).toEqual([
+      ["PHONE", "(234) 567-8901"],
+      ["PHONE", "(234) 567.8902"],
+    ]);
+  });
+
   it("labels an international number whose digits pass the card check as a phone", () => {
     expect(isCardNumber("55 11 91234-5676")).toBe(true);
     expect(found("ligar +55 11 91234-5676")).toEqual([

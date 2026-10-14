@@ -44,6 +44,10 @@ const CARD_CANDIDATE = /(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)/g;
 const PHONE_INTERNATIONAL =
   /(?<![\d+])\+\d{1,3}(?:[ .-]?\(\d{1,4}\))?(?:[ .-]?\d){6,14}(?!\d)/g;
 
+/** The brackets and the fixed grouping are the anchor: a bare ten-digit run is
+ * as likely an order number or an epoch second. */
+const PHONE_AREA_CODE = /(?<!\w)\(\d{3}\) ?\d{3}[-.]\d{4}(?!\d)/g;
+
 /** The candidate can run past the IBAN into prose, so trailing tokens are trimmed
  * off until what remains validates. */
 const findIban: Finder = (text) => {
@@ -84,6 +88,7 @@ const FINDERS: readonly Finder[] = [
   findSiren,
   simple("CARD", CARD_CANDIDATE, isCardNumber),
   findFrenchPhone,
+  simple("PHONE", PHONE_AREA_CODE),
 ];
 
 export function detectDeterministic(text: string): Span[] {

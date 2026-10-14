@@ -440,6 +440,13 @@ const HOME: readonly HomeCase[] = [
     markup: "call [[PHONE:+1 (234) 567-8901]] after lunch",
   },
   {
+    id: "phone-national-bracketed-area-code",
+    language: "en",
+    layer: "local",
+    note: "national number with its area code in brackets",
+    markup: "call [[PHONE:(234) 567-8901]] about order {{2345678901}}",
+  },
+  {
     id: "phone-international-siren-tail",
     language: "es",
     layer: "local",
