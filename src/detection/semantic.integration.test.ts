@@ -71,6 +71,20 @@ describe("live detector", () => {
     expect(counts.get("PERSON")).toBe(1);
   });
 
+  it("masks a lone hyphenated first name whole", async ({ skip }) => {
+    if (!detectorUp) skip();
+
+    const text =
+      "Jean Rousseau et Jean-Pierre Lefevre ont relu le devis. " +
+      "Jean-Pierre relance demain.";
+
+    const { masked, semanticSkipped } = await maskText(text, OPTIONS);
+    expect(semanticSkipped).toBeNull();
+
+    expect(masked).not.toContain("Jean");
+    expect(masked).not.toContain("Pierre");
+  });
+
   it("finds company names, which is what the detector-patch adds", async ({
     skip,
   }) => {

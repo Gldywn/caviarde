@@ -25,8 +25,10 @@ export function propagateFirstNames(
       continue;
 
     // Case-sensitive and word-bounded, so the name inside a longer word stays put.
+    // A hyphen binds too: Jean-Pierre is another first name, and claiming its
+    // Jean would leave Pierre visible. An apostrophe does not, or d'Amélie leaks.
     const pattern = new RegExp(
-      `(?<![\\p{L}\\p{N}])${escape(first)}(?![\\p{L}\\p{N}])`,
+      `(?<![\\p{L}\\p{N}-])${escape(first)}(?![\\p{L}\\p{N}-])`,
       "gu",
     );
 

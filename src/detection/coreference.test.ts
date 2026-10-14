@@ -73,6 +73,30 @@ describe("propagateFirstNames", () => {
     ).toHaveLength(2);
   });
 
+  it("leaves a longer hyphenated first name to its own full name", () => {
+    const text = "Jean Rousseau ecrit. Jean-Pierre relance.";
+    expect(propagateFirstNames(text, [spanOf(text, "Jean Rousseau")])).toEqual(
+      [],
+    );
+  });
+
+  it("gives a lone hyphenated first name the token of its full name", () => {
+    const text = "Jean Rousseau et Jean-Pierre Lefevre. Jean-Pierre relance.";
+    const found = propagateFirstNames(text, [
+      spanOf(text, "Jean Rousseau"),
+      spanOf(text, "Jean-Pierre Lefevre"),
+    ]);
+    expect(found).toHaveLength(1);
+    expect(text.slice(found[0]!.start, found[0]!.end)).toBe("Jean-Pierre");
+    expect(found[0]!.alias).toBe("Jean-Pierre Lefevre");
+  });
+
+  it("still claims a first name after an elided article", () => {
+    const text = "André Müller valide. Le dossier d'André avance.";
+    const found = propagateFirstNames(text, [spanOf(text, "André Müller")]);
+    expect(found.map((s) => text.slice(s.start, s.end))).toEqual(["André"]);
+  });
+
   it("ignores non-person spans", () => {
     const text = "Acme Solutions et Acme.";
     expect(
