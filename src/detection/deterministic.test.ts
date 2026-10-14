@@ -134,6 +134,19 @@ describe("phone numbers", () => {
     ]);
   });
 
+  it("catches a bracketed trunk zero after the country code", () => {
+    expect(found("+44 (0)20 1234 5678 ou +33 (0)1 23 45 67 89")).toEqual([
+      ["PHONE", "+44 (0)20 1234 5678"],
+      ["PHONE", "+33 (0)1 23 45 67 89"],
+    ]);
+  });
+
+  it("catches a bracketed area code after the country code", () => {
+    expect(found("call +1 (234) 567-8901 today")).toEqual([
+      ["PHONE", "+1 (234) 567-8901"],
+    ]);
+  });
+
   it("labels an international number whose digits pass the card check as a phone", () => {
     expect(isCardNumber("55 11 91234-5676")).toBe(true);
     expect(found("ligar +55 11 91234-5676")).toEqual([

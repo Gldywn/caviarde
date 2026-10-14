@@ -40,7 +40,9 @@ const IBAN_CANDIDATE =
 
 const CARD_CANDIDATE = /(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)/g;
 
-const PHONE_INTERNATIONAL = /(?<![\d+])\+\d{1,3}(?:[ .-]?\d){6,14}(?!\d)/g;
+/** The bracketed group is a trunk zero, `+44 (0)20`, or an area code, `+1 (234)`. */
+const PHONE_INTERNATIONAL =
+  /(?<![\d+])\+\d{1,3}(?:[ .-]?\(\d{1,4}\))?(?:[ .-]?\d){6,14}(?!\d)/g;
 
 /** The candidate can run past the IBAN into prose, so trailing tokens are trimmed
  * off until what remains validates. */

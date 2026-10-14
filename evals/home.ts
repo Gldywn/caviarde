@@ -425,6 +425,21 @@ const HOME: readonly HomeCase[] = [
     markup: "call [[PHONE:+44 20 1234 5678]] or [[PHONE:+49 30 12345678]]",
   },
   {
+    id: "phone-bracketed-trunk-zero",
+    language: "en",
+    layer: "local",
+    note: "trunk zero in brackets after the country code",
+    markup:
+      "call [[PHONE:+44 (0)20 1234 5678]] or [[PHONE:+33 (0)1 23 45 67 89]]",
+  },
+  {
+    id: "phone-bracketed-area-code",
+    language: "en",
+    layer: "local",
+    note: "area code in brackets after the country code",
+    markup: "call [[PHONE:+1 (234) 567-8901]] after lunch",
+  },
+  {
     id: "phone-international-siren-tail",
     language: "es",
     layer: "local",
