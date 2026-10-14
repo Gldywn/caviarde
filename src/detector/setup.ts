@@ -242,7 +242,7 @@ export async function runSetup(
     state: "busy",
     status: "Starting",
     body: TEXT.detectorStarting,
-    facts: managedFacts,
+    facts: [address],
   });
   await deps.removeStoppedContainer(dockerPath);
 
@@ -252,10 +252,13 @@ export async function runSetup(
   } catch {
     refused = true;
   }
+  // A refused start published nothing, so whatever answers was not published
+  // by this command.
+  const facts = refused ? [address] : managedFacts;
 
   for (let attempt = 0; attempt < READY_ATTEMPTS; attempt++) {
     if (await deps.answers()) {
-      update("container", running(managedFacts));
+      update("container", running(facts));
       return;
     }
     // A refused start is only reported once the port has had a chance to
@@ -268,6 +271,6 @@ export async function runSetup(
     state: "fail",
     status: "Not responding",
     body: refused ? TEXT.detectorRefused : TEXT.detectorSilent,
-    facts: managedFacts,
+    facts,
   });
 }

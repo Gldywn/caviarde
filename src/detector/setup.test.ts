@@ -113,12 +113,20 @@ describe("setup without a container runtime", () => {
 
 describe("setup with the image installed", () => {
   it("starts the container on the port the preference names", async () => {
-    const { rows, deps, run } = setup(MANAGED);
+    const { rows, patches, deps, run } = setup(MANAGED);
     await run();
     expect(rows.runtime).toMatchObject({
       state: "ok",
       facts: [["Binary", DOCKER]],
     });
+    // Loopback is claimed once the container is published, not before.
+    expect(patches).toContainEqual([
+      "container",
+      expect.objectContaining({
+        status: "Starting",
+        facts: [["Address", MANAGED]],
+      }),
+    ]);
     expect(rows.image).toMatchObject({
       state: "ok",
       status: "Installed",
@@ -182,9 +190,10 @@ describe("setup with the image installed", () => {
     await run();
     expect(deps.answers).toHaveBeenCalledTimes(1 + 3);
     expect(rows.container.body).toContain("could not start");
+    expect(rows.container.facts).toEqual([["Address", MANAGED]]);
   });
 
-  it("accepts a refused start when the port answers anyway", async () => {
+  it("accepts a refused start the port answers anyway, claiming no loopback", async () => {
     const { rows, run } = setup(MANAGED, {
       startContainer: async () => {
         throw new Error("Conflict");
@@ -192,6 +201,7 @@ describe("setup with the image installed", () => {
     });
     await run();
     expect(rows.container).toMatchObject({ state: "ok", status: "Running" });
+    expect(rows.container.facts).toEqual([["Address", MANAGED]]);
   });
 });
 
