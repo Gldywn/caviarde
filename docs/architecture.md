@@ -78,7 +78,8 @@ src/
     client.ts                the single HTTP module
     image.ts                 pinned digest, thresholds, docker probe paths
     endpoint.ts              which Detector URLs the setup command can manage
-    docker.ts                container lifecycle
+    docker.ts                container lifecycle, pull journal and liveness
+    setup.ts                 Set up Detector decisions, side effects injected
   masking/
     placeholders.ts          [TYPE_N] assignment
     apply.ts                 right-to-left replacement

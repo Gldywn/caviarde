@@ -1,7 +1,20 @@
-import { execFile } from "node:child_process";
+import { execFile, spawnSync } from "node:child_process";
+import {
+  closeSync,
+  openSync,
+  readFileSync,
+  writeFileSync,
+  writeSync,
+} from "node:fs";
 import { promisify } from "node:util";
 import { describe, expect, it, vi } from "vitest";
-import { containerArgs, imageSize, readPullProgress } from "./docker";
+import {
+  containerArgs,
+  imageSize,
+  pullIsAlive,
+  readPullProgress,
+  startPull,
+} from "./docker";
 import {
   CONTAINER_NAME,
   CONTAINER_PORT,
@@ -250,5 +263,112 @@ describe("credential helper failure", () => {
     expect(readPullProgress(file)?.error).toContain(
       "docker-credential-osxkeychain",
     );
+  });
+});
+
+describe("pull liveness", () => {
+  const journal = async () => {
+    const fs = await import("node:fs/promises");
+    const os = await import("node:os");
+    const path = await import("node:path");
+    return path.join(
+      await fs.mkdtemp(path.join(os.tmpdir(), "cvd-")),
+      "pull.log",
+    );
+  };
+
+  it("records the PID of the pull it starts", async () => {
+    const log = await journal();
+    // echo stands in for docker: it accepts the arguments and exits.
+    startPull("/bin/echo", log);
+    expect(readFileSync(`${log}.pid`, "utf8")).toMatch(/^[1-9]\d*$/);
+  });
+
+  it("keeps an older pull still writing the journal out of the new one", async () => {
+    const log = await journal();
+    const older = openSync(log, "w");
+    startPull("/bin/echo", log);
+    writeSync(older, "Error response from daemon: unexpected EOF\n");
+    closeSync(older);
+    expect(readPullProgress(log)?.error).toBeNull();
+  });
+
+  const ps = vi.mocked(promisify(execFile));
+  const noSuchProcess = Object.assign(new Error("Command failed"), {
+    code: 1,
+  });
+  const cannotRun = Object.assign(new Error("spawn /bin/ps EPERM"), {
+    code: "EPERM",
+  });
+
+  it("asks ps for the state of the recorded PID", async () => {
+    const log = await journal();
+    writeFileSync(`${log}.pid`, "4242");
+    ps.mockResolvedValueOnce({ stdout: "S\n", stderr: "" });
+    expect(await pullIsAlive(log)).toBe(true);
+    expect(ps).toHaveBeenLastCalledWith(
+      "/bin/ps",
+      ["-o", "stat=", "-p", "4242"],
+      expect.objectContaining({ timeout: 5_000 }),
+    );
+  });
+
+  it("reads an exited pull nobody reaped as dead, though signal 0 finds it", async () => {
+    const log = await journal();
+    writeFileSync(`${log}.pid`, String(process.pid));
+    ps.mockResolvedValueOnce({ stdout: "  Z+ \n", stderr: "" });
+    expect(await pullIsAlive(log)).toBe(false);
+  });
+
+  it("reads a pull whose process has exited as dead", async () => {
+    const log = await journal();
+    const exited = spawnSync("/usr/bin/true");
+    expect(exited.error).toBeUndefined();
+    expect(exited.status).toBe(0);
+    expect(exited.pid).toBeGreaterThan(0);
+    writeFileSync(`${log}.pid`, String(exited.pid));
+    ps.mockRejectedValueOnce(noSuchProcess);
+    expect(await pullIsAlive(log)).toBe(false);
+  });
+
+  it("falls back to signal 0 when ps cannot run, rather than calling the pull dead", async () => {
+    const log = await journal();
+    writeFileSync(`${log}.pid`, String(process.pid));
+    ps.mockRejectedValueOnce(cannotRun);
+    expect(await pullIsAlive(log)).toBe(true);
+  });
+
+  it("reads a process it may not signal as alive when ps cannot run", async () => {
+    const log = await journal();
+    writeFileSync(`${log}.pid`, String(process.pid));
+    ps.mockRejectedValueOnce(cannotRun);
+    const kill = vi.spyOn(process, "kill").mockImplementation(() => {
+      throw Object.assign(new Error("not permitted"), { code: "EPERM" });
+    });
+    try {
+      expect(await pullIsAlive(log)).toBe(true);
+    } finally {
+      kill.mockRestore();
+    }
+  });
+
+  it("reads a journal without a PID file as dead", async () => {
+    expect(await pullIsAlive(await journal())).toBe(false);
+  });
+
+  it.each(["", "abc", "0", "-1", "1.5", "9007199254740993"])(
+    "reads an invalid PID %j as dead",
+    async (raw) => {
+      const log = await journal();
+      writeFileSync(`${log}.pid`, raw);
+      expect(await pullIsAlive(log)).toBe(false);
+    },
+  );
+
+  it("replaces an earlier PID when the spawn fails, rather than keeping it", async () => {
+    const log = await journal();
+    writeFileSync(`${log}.pid`, String(process.pid));
+    startPull("/nonexistent/docker", log);
+    expect(await pullIsAlive(log)).toBe(false);
   });
 });
