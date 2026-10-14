@@ -8,6 +8,7 @@ import { isLuhnValid } from "../src/detection/validators/luhn";
 import { maskText } from "../src/mask-text";
 import type { Span } from "../src/detection/types";
 import { HOME_CASES } from "./home";
+import { shippedPhoneRegions } from "./run";
 import { placeholdersOf, scoreCase } from "./score";
 
 const BASE_URL = process.env.CAVIARDE_DETECTOR_URL ?? "http://127.0.0.1:5002";
@@ -16,7 +17,7 @@ const LOCAL: SemanticOptions = {
   baseUrl: BASE_URL,
   timeoutMs: 3500,
   authToken: "",
-  phoneRegions: ["FR"],
+  phoneRegions: shippedPhoneRegions(),
   maskPersons: false,
   maskLocations: false,
   maskOrganizations: false,

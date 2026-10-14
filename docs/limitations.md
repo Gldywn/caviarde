@@ -73,9 +73,9 @@ Luhn, about one in ten, is masked as a SIRET: a compact timestamp such as
 `20241014125302`, or a fourteen-digit order number.
 
 A bare SIREN needs its keyword right before the number, separated by
-punctuation or spaces only: `SIREN 123456782` and `RCS : 123456782` are masked, `RCS Lyon
-123456782` is not, because a word stands between them. The spaced form
-`RCS Lyon B 123 456 782` is masked regardless.
+punctuation or spaces only: `SIREN 123456782` and `RCS : 123456782` are
+masked, `RCS Lyon 123456782` is not, because a word stands between them. The
+spaced form `RCS Lyon B 123 456 782` is masked regardless.
 
 ## Phone numbers
 

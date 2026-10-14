@@ -1,14 +1,28 @@
 import { execFile } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import type { SemanticOptions } from "../src/detection/semantic";
 import { maskText } from "../src/mask-text";
-import { DEFAULT_TIMEOUT_MS } from "../src/preferences";
+import { DEFAULT_TIMEOUT_MS, parsePhoneRegions } from "../src/preferences";
 import type { Case } from "./cases";
 import { sha256 } from "./sources/fetch";
 import { type CaseScore, overlap, scoreCase } from "./score";
 
 export type Mode = "on" | "off";
+
+/** Read from the manifest a user installs, so the evaluation follows any
+ * change to the default: each region lets the detector read more digit runs
+ * as phone numbers. Runs from the repository root, like every command here. */
+export function shippedPhoneRegions(): string[] {
+  const manifest = JSON.parse(readFileSync("package.json", "utf8")) as {
+    preferences: Array<{ name: string; default?: unknown }>;
+  };
+  const preference = manifest.preferences.find(
+    (p) => p.name === "phoneRegions",
+  );
+  return parsePhoneRegions(String(preference?.default ?? ""));
+}
 
 /** The extension's defaults, so a timeout counts as the outcome a user gets. */
 export function optionsFor(mode: Mode, baseUrl: string): SemanticOptions {
@@ -16,7 +30,7 @@ export function optionsFor(mode: Mode, baseUrl: string): SemanticOptions {
     baseUrl,
     timeoutMs: DEFAULT_TIMEOUT_MS,
     authToken: "",
-    phoneRegions: ["FR"],
+    phoneRegions: shippedPhoneRegions(),
     maskPersons: mode === "on",
     maskLocations: mode === "on",
     maskOrganizations: mode === "on",

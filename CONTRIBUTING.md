@@ -108,11 +108,10 @@ gets a module of the same shape. A new detector touches these places:
    match, a wrong check digit when the format has one, and a value a later
    finder would also accept, such as one passing the card check, which proves
    the position. `summary.test.ts` covers the HUD line. Technical identifiers
-   of the same shape go in `identifiers.fixture.ts`, chosen so they satisfy the
-   checksum. A test asserts that they do before asserting they are left alone:
-   the validator's test when the structural rule lives in the validator, as in
-   `validators/card.test.ts`, or `deterministic.test.ts` when it lives in the
-   finder, as the SIREN keyword guard does. Otherwise the survival test passes
+   of the same shape go in the home dataset, `evals/home.ts`, as `{{...}}`
+   values chosen so they satisfy the checksum and marked `luhn: true`, so that
+   `evals/home.test.ts` asserts the checksum before asserting they are left
+   alone, with and without the detector. Otherwise the survival test passes
    because the checksum failed, not because the structural rule held.
 7. **Documentation.** The detection lists in `README.md` and
    `docs/architecture.md`, and in `docs/limitations.md` what the structural

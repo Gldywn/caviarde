@@ -37,9 +37,10 @@ and off is bootstrapped on the same resampled groups, over exactly the same
 cases, or not at all.
 
 The detector is called with the extension's defaults, one request at a time:
-3,500 ms timeout, phone region `FR`. A timeout is a result, reported among the
-skip reasons. Texts above 6,000 characters are kept, and reported in their own
-size band, because the extension skips the semantic layer for them.
+3,500 ms timeout and the `phoneRegions` default read from `package.json`. A
+timeout is a result, reported among the skip reasons. Texts above 6,000
+characters are kept, and reported in their own size band, because the
+extension skips the semantic layer for them.
 
 ## Data
 
