@@ -4,6 +4,7 @@ import { detectDeterministic } from "./deterministic";
 import { mergeSpans } from "./merge";
 import type { EntityType } from "./types";
 import { isCardNumber } from "./validators/card";
+import { isSirenValid } from "./validators/french-business";
 
 function found(text: string): Array<[EntityType, string]> {
   return detectDeterministic(text).map((s) => [
@@ -124,6 +125,20 @@ describe("phone numbers", () => {
 
   it("catches a dotted French number", () => {
     expect(found("01.23.45.67.89")).toEqual([["PHONE", "01.23.45.67.89"]]);
+  });
+
+  it("keeps a SIREN-shaped tail inside an international number", () => {
+    expect(isSirenValid("123456782")).toBe(true);
+    expect(found("llamar al +34 123 456 782")).toEqual([
+      ["PHONE", "+34 123 456 782"],
+    ]);
+  });
+
+  it("labels an international number whose digits pass the card check as a phone", () => {
+    expect(isCardNumber("55 11 91234-5676")).toBe(true);
+    expect(found("ligar +55 11 91234-5676")).toEqual([
+      ["PHONE", "+55 11 91234-5676"],
+    ]);
   });
 });
 

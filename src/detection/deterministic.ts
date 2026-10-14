@@ -66,8 +66,8 @@ const findIban: Finder = (text) => {
   return found;
 };
 
-/** Priority order: a later finder never claims a range an earlier one took. A
- * SIRET can pass the card check and a spaced one starts with a SIREN, so it leads both. */
+/** Priority order: a later finder never claims a range an earlier one took. A leading +
+ * is a phone whatever its digits pass; a SIRET passes the card check and starts with a SIREN. */
 const FINDERS: readonly Finder[] = [
   simple("PRIVATE_KEY", PEM_BLOCK),
   simple("JWT", JWT),
@@ -77,10 +77,10 @@ const FINDERS: readonly Finder[] = [
   simple("IP", IPV6_CANDIDATE, isMaskableIpv6),
   simple("IP", IPV4, isMaskableIpv4),
   findIban,
+  simple("PHONE", PHONE_INTERNATIONAL),
   findSiret,
   findSiren,
   simple("CARD", CARD_CANDIDATE, isCardNumber),
-  simple("PHONE", PHONE_INTERNATIONAL),
   findFrenchPhone,
 ];
 

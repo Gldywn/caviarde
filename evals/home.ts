@@ -425,6 +425,20 @@ const HOME: readonly HomeCase[] = [
     markup: "call [[PHONE:+44 20 1234 5678]] or [[PHONE:+49 30 12345678]]",
   },
   {
+    id: "phone-international-siren-tail",
+    language: "es",
+    layer: "local",
+    note: "international number whose last nine digits are a valid spaced SIREN",
+    markup: "llamar al [[PHONE:+34 123 456 782]] por la tarde",
+  },
+  {
+    id: "phone-international-card-digits",
+    language: "pt",
+    layer: "local",
+    note: "international number whose digits pass the card check",
+    markup: "ligar para [[PHONE:+55 11 91234-5676]] amanhã",
+  },
+  {
     id: "iban-spaced",
     language: "fr",
     layer: "local",
