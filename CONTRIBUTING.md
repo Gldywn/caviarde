@@ -32,8 +32,9 @@ The CI checks can be run locally from the repository root:
 
 ```bash
 mise exec -- pnpm test
-mise exec -- pnpm exec eslint src
-mise exec -- pnpm exec prettier --check src
+mise exec -- pnpm evals help
+mise exec -- pnpm exec eslint src evals
+mise exec -- pnpm exec prettier --check src evals
 mise exec -- pnpm run build --output dist --non-interactive
 ```
 
@@ -47,6 +48,10 @@ Changes to semantic detection, span merging, first-name propagation, technical
 identifier preservation, the detector patch or confidence thresholds need tests
 against a running detector, including an invented example through the whole
 masking pipeline. Mocked responses cannot establish what the model will return.
+Threshold, merge or detector changes are also compared with the evaluation
+baseline in `evals/baseline.md`, through `pnpm evals run` on the development
+split; [docs/evaluation.md](docs/evaluation.md) describes the corpora, the
+figures and the noise those comparisons have to exceed.
 
 `src/detection/semantic.integration.test.ts` probes
 `http://127.0.0.1:5002/health`. Tests that require the detector skip themselves if
@@ -103,11 +108,10 @@ gets a module of the same shape. A new detector touches these places:
    match, a wrong check digit when the format has one, and a value a later
    finder would also accept, such as one passing the card check, which proves
    the position. `summary.test.ts` covers the HUD line. Technical identifiers
-   of the same shape go in `identifiers.fixture.ts`, chosen so they satisfy the
-   checksum. A test asserts that they do before asserting they are left alone:
-   the validator's test when the structural rule lives in the validator, as in
-   `validators/card.test.ts`, or `deterministic.test.ts` when it lives in the
-   finder, as the SIREN keyword guard does. Otherwise the survival test passes
+   of the same shape go in the home dataset, `evals/home.ts`, as `{{...}}`
+   values chosen so they satisfy the checksum and marked `luhn: true`, so that
+   `evals/home.test.ts` asserts the checksum before asserting they are left
+   alone, with and without the detector. Otherwise the survival test passes
    because the checksum failed, not because the structural rule held.
 7. **Documentation.** The detection lists in `README.md` and
    `docs/architecture.md`, and in `docs/limitations.md` what the structural

@@ -30,6 +30,17 @@ it("runs the whole pipeline, propagation included, with no detector", async () =
     masked: "[PERSON_1] valide demain. @[PERSON_1] a relu.",
     counts: new Map([["PERSON", 1]]),
     semanticSkipped: "disabled",
+    spans: [
+      { type: "PERSON", start: 22, end: 34, layer: "deterministic" },
+      {
+        type: "PERSON",
+        start: 0,
+        end: 5,
+        layer: "deterministic",
+        alias: "Marie Dubois",
+      },
+    ],
+    dropped: [],
   });
 });
 
@@ -42,4 +53,23 @@ it("masks a first name shared by two people once", async () => {
   );
 
   expect(masked).toBe("@[PERSON_1] et @[PERSON_2]. [PERSON_1] valide.");
+});
+
+it("reports the semantic spans the merge refused", async () => {
+  const text = "Ecrire a marie.dubois@acme-solutions.fr demain";
+  const person = { entity_type: "PERSON", start: 9, end: 21, score: 0.99 };
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(new Response(JSON.stringify([person]))),
+  );
+
+  const result = await maskText(text, { ...OFFLINE, maskPersons: true });
+
+  expect(result.semanticSkipped).toBeNull();
+  expect(result.spans).toEqual([
+    { type: "EMAIL", start: 9, end: 39, layer: "deterministic" },
+  ]);
+  expect(result.dropped).toEqual([
+    { type: "PERSON", start: 9, end: 21, layer: "semantic" },
+  ]);
 });

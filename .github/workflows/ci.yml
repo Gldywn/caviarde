@@ -34,9 +34,13 @@ jobs:
       # Integration tests skip themselves without a detector, which CI has none of.
       - run: pnpm test
 
-      - run: pnpm exec eslint src
+      # Loads every harness module through Node's own type stripping, which
+      # neither vitest nor tsc exercises.
+      - run: pnpm evals help
 
-      - run: pnpm exec prettier --check src
+      - run: pnpm exec eslint src evals
+
+      - run: pnpm exec prettier --check src evals
 
       # An explicit output keeps CI builds out of the local Raycast installation.
       - run: pnpm run build --output dist --non-interactive
