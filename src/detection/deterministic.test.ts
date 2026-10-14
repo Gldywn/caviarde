@@ -127,6 +127,15 @@ describe("phone numbers", () => {
     expect(found("01.23.45.67.89")).toEqual([["PHONE", "01.23.45.67.89"]]);
   });
 
+  it("reads non-breaking and narrow non-breaking spaces as separators", () => {
+    const french = ["06", "12", "34", "56", "78"].join("\u00a0");
+    const international = ["+33", "1", "23", "45", "67", "89"].join("\u202f");
+    expect(found(`tel ${french} ou ${international}`)).toEqual([
+      ["PHONE", french],
+      ["PHONE", international],
+    ]);
+  });
+
   it("keeps a SIREN-shaped tail inside an international number", () => {
     expect(isSirenValid("123456782")).toBe(true);
     expect(found("llamar al +34 123 456 782")).toEqual([

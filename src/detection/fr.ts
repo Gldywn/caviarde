@@ -9,7 +9,8 @@ const SIREN_CONTEXT =
   /(?:siren|siret|rcs|immatricul|greffe)[^\p{L}\p{N}]{0,12}$/iu;
 const SIREN_CONTEXT_WINDOW = 32;
 
-const PHONE_FRENCH = /(?<![\d+])0[1-9](?:[ .-]?\d{2}){4}(?!\d)/g;
+/** French typography separates the pairs with a non-breaking space, or a narrow one. */
+const PHONE_FRENCH = /(?<![\d+])0[1-9](?:[ .\u00a0\u202f-]?\d{2}){4}(?!\d)/g;
 
 function digitsOf(value: string): string {
   return value.replace(/\D/g, "");

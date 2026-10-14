@@ -425,6 +425,14 @@ const HOME: readonly HomeCase[] = [
     markup: "call [[PHONE:+44 20 1234 5678]] or [[PHONE:+49 30 12345678]]",
   },
   {
+    id: "phone-typographic-spaces",
+    language: "fr",
+    layer: "local",
+    note: "groups separated by a non-breaking space and by a narrow non-breaking space",
+    markup:
+      "tel [[PHONE:06\u00a012\u00a034\u00a056\u00a078]] ou [[PHONE:+33\u202f1\u202f23\u202f45\u202f67\u202f89]]",
+  },
+  {
     id: "phone-bracketed-trunk-zero",
     language: "en",
     layer: "local",

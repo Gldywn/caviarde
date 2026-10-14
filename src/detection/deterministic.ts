@@ -42,7 +42,7 @@ const CARD_CANDIDATE = /(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)/g;
 
 /** The bracketed group is a trunk zero, `+44 (0)20`, or an area code, `+1 (234)`. */
 const PHONE_INTERNATIONAL =
-  /(?<![\d+])\+\d{1,3}(?:[ .-]?\(\d{1,4}\))?(?:[ .-]?\d){6,14}(?!\d)/g;
+  /(?<![\d+])\+\d{1,3}(?:[ .\u00a0\u202f-]?\(\d{1,4}\))?(?:[ .\u00a0\u202f-]?\d){6,14}(?!\d)/g;
 
 /** `(234) 567-8901` in North America, `(11) 91234-5678` in Brazil. The brackets and the
  * fixed grouping are the anchor: a bare digit run is as likely an order number. */
