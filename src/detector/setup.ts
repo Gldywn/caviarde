@@ -83,14 +83,14 @@ async function pullImage(
     journal === null ||
     journal.finished ||
     journal.error !== null ||
-    !deps.pullIsAlive(logPath)
+    !(await deps.pullIsAlive(logPath))
   )
     deps.startPull(dockerPath, logPath);
 
   for (;;) {
     // Checked before the journal is read, so a pull found dead has already
     // written its last line and a normal exit is never mistaken for a crash.
-    const alive = deps.pullIsAlive(logPath);
+    const alive = await deps.pullIsAlive(logPath);
     const progress = deps.readPullProgress(logPath);
 
     if (progress?.error != null) {

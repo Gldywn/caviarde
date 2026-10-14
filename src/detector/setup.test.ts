@@ -33,7 +33,7 @@ function setup(url: string, overrides: Partial<SetupDeps> = {}) {
     imageSize: vi.fn(async () => "2.44 GB"),
     startPull: vi.fn(),
     readPullProgress: vi.fn((): PullProgress | null => null),
-    pullIsAlive: vi.fn(() => true),
+    pullIsAlive: vi.fn(async () => true),
     removeStoppedContainer: vi.fn(async () => {}),
     startContainer: vi.fn(async () => {}),
     answers: vi.fn(async () => probes++ > 0),
@@ -285,7 +285,7 @@ describe("image download", () => {
     const alive = [false, true];
     const { rows, deps, run } = downloading({
       readPullProgress: () => reads.shift() ?? null,
-      pullIsAlive: () => alive.shift() ?? true,
+      pullIsAlive: async () => alive.shift() ?? true,
     });
     await run();
     expect(deps.startPull).toHaveBeenCalledOnce();
@@ -296,7 +296,7 @@ describe("image download", () => {
     const alive = [true, true, false];
     const { rows, deps, run } = downloading({
       readPullProgress: () => journal(),
-      pullIsAlive: () => alive.shift() ?? false,
+      pullIsAlive: async () => alive.shift() ?? false,
     });
     await run();
     expect(deps.startPull).not.toHaveBeenCalled();
@@ -318,11 +318,28 @@ describe("image download", () => {
     const reads = [null, journal({ layers: 0, done: 0 })];
     const { rows, deps, run } = downloading({
       readPullProgress: () => reads.shift() ?? null,
-      pullIsAlive: () => false,
+      pullIsAlive: async () => false,
     });
     await run();
     expect(deps.startPull).toHaveBeenCalledOnce();
     expect(rows.image.body).toContain("stopped before it finished");
+  });
+
+  it("checks liveness before the journal, so a pull exiting between them succeeds", async () => {
+    let exited = false;
+    let reads = 0;
+    const { rows, run } = downloading({
+      // The pull writes its Status line and exits right after the first poll
+      // has read the journal.
+      readPullProgress: () => {
+        const progress = exited ? journal({ finished: true }) : journal();
+        if (++reads === 2) exited = true;
+        return progress;
+      },
+      pullIsAlive: async () => !exited,
+    });
+    await run();
+    expect(rows.image).toMatchObject({ state: "ok", status: "Installed" });
   });
 
   it("takes a dead pull whose journal finished as a success", async () => {
@@ -330,7 +347,7 @@ describe("image download", () => {
     const alive = [true, false];
     const { rows, run } = downloading({
       readPullProgress: () => reads.shift() ?? null,
-      pullIsAlive: () => alive.shift() ?? false,
+      pullIsAlive: async () => alive.shift() ?? false,
     });
     await run();
     expect(rows.image).toMatchObject({ state: "ok", status: "Installed" });
@@ -342,7 +359,7 @@ describe("image download", () => {
     const { rows, run } = downloading(
       {
         readPullProgress: () => journal(),
-        pullIsAlive: () => alive.shift() ?? false,
+        pullIsAlive: async () => alive.shift() ?? false,
       },
       () => checks++ > 0,
     );
@@ -360,7 +377,7 @@ describe("image download", () => {
     ];
     const { rows, deps, run } = downloading({
       readPullProgress: () => reads.shift() ?? null,
-      pullIsAlive: () => false,
+      pullIsAlive: async () => false,
     });
     await run();
     expect(rows.image).toMatchObject({

@@ -5,6 +5,7 @@ import {
   mkdirSync,
   openSync,
   readFileSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
 import { homedir } from "node:os";
@@ -103,6 +104,9 @@ const pidPath = (logPath: string) => `${logPath}.pid`;
  * and the log is what lets the view show progress when it reopens. */
 export function startPull(docker: string, logPath: string): void {
   mkdirSync(dirname(logPath), { recursive: true });
+  // A new file rather than a truncated one: an older pull still holding the
+  // journal open would otherwise write its lines, errors included, into this one.
+  rmSync(logPath, { force: true });
   const out = openSync(logPath, "w");
   const child = spawn(docker, ["pull", DETECTOR_IMAGE], {
     detached: true,
@@ -120,7 +124,7 @@ export function startPull(docker: string, logPath: string): void {
 
 /** A journal with neither completion nor error is a running pull only if the
  * process `startPull` recorded still exists. */
-export function pullIsAlive(logPath: string): boolean {
+export async function pullIsAlive(logPath: string): Promise<boolean> {
   let raw: string;
   try {
     raw = readFileSync(pidPath(logPath), "utf8").trim();
@@ -129,6 +133,19 @@ export function pullIsAlive(logPath: string): boolean {
   }
   const pid = Number(raw);
   if (!/^\d+$/.test(raw) || !Number.isSafeInteger(pid) || pid < 1) return false;
+
+  // Signal 0 succeeds on a zombie, which is what a pull becomes once the
+  // command that spawned it has unloaded and nothing reaps it.
+  let state = "";
+  try {
+    ({ stdout: state } = await run("/bin/ps", ["-o", "stat=", "-p", raw], {
+      timeout: 5_000,
+    }));
+  } catch {
+    // No such process, or no way to look: signal 0 decides, never ps alone.
+  }
+  state = state.trim();
+  if (state !== "") return !state.startsWith("Z");
 
   // Existence, not identity: a dead pull whose PID now belongs to another
   // process, after a reboot or not, reads as alive and is still followed.
