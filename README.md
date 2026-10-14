@@ -171,7 +171,7 @@ glossed over.
 | Detector URL | `http://127.0.0.1:5002` | Where the semantic detector lives. Set up Detector only manages this loopback form |
 | Detector Timeout | `3500` ms | Past this, fall back to patterns alone |
 | Auth Token | empty | Bearer token, for a detector that is not local |
-| Phone Regions | `FR` | Countries whose national phone formats the detector reads. French national and international `+` numbers are masked either way |
+| Phone Regions | `FR` | Countries whose national phone formats the detector reads. Without the detector, only common French and international `+` layouts are masked |
 | Mask person names | on | Needs the detector, except `@mentions` |
 | Mask locations and addresses | on | Needs the detector |
 | Mask company and organisation names | on | Needs the detector and its patch |

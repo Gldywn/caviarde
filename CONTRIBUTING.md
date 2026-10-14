@@ -85,7 +85,9 @@ gets a module of the same shape. A new detector touches these places:
    function. A checksum alone never qualifies a match: Luhn is one digit, so
    about one arbitrary number in ten passes it. A structural rule comes with
    it, such as an issuer prefix for cards, or a keyword or the spaced form for
-   a SIREN.
+   a SIREN. `findSiret` currently breaks this rule: it accepts a bare
+   fourteen-digit number on its checksum alone, as `docs/limitations.md`
+   records.
 3. **Position in `FINDERS`.** The order is behaviour: the first finder to claim
    a range keeps it, and later overlapping matches are dropped. When two
    finders can match the same text, the one whose label should win goes first.
@@ -102,10 +104,11 @@ gets a module of the same shape. A new detector touches these places:
    finder would also accept, such as one passing the card check, which proves
    the position. `summary.test.ts` covers the HUD line. Technical identifiers
    of the same shape go in `identifiers.fixture.ts`, chosen so they satisfy the
-   checksum, and the validator's test asserts that they do before asserting
-   they are rejected, as `validators/card.test.ts` does. Otherwise the survival
-   test passes because the checksum failed, not because the structural rule
-   held.
+   checksum. A test asserts that they do before asserting they are left alone:
+   the validator's test when the structural rule lives in the validator, as in
+   `validators/card.test.ts`, or `deterministic.test.ts` when it lives in the
+   finder, as the SIREN keyword guard does. Otherwise the survival test passes
+   because the checksum failed, not because the structural rule held.
 7. **Documentation.** The detection lists in `README.md` and
    `docs/architecture.md`, and in `docs/limitations.md` what the structural
    rule knowingly lets through.

@@ -60,14 +60,21 @@ Handled by the deterministic layer rather than the detector, which reports a
 SIRET as a credit card (a SIRET is fourteen digits and Luhn-valid by
 construction, La Poste excepted) and does not detect a SIREN at all.
 
+A SIRET needs no keyword or spacing, so a bare fourteen-digit number that passes
+Luhn, about one in ten, is masked as a SIRET: a compact timestamp such as
+`20241014125302`, or a fourteen-digit order number.
+
 ## French phone numbers
 
 The deterministic layer recognises French national numbers and international
-numbers in the `+` format it supports, whatever the `phoneRegions` preference
-says. Other national formats rely on the detector, which reads them for the
-regions `phoneRegions` lists. That hint has no effect without a successful
-detector response, and no request is made when the text is over the semantic
-size limit or when all three semantic preferences are off.
+`+` numbers written with no separators or with ordinary spaces, dots or hyphens
+between digits, whatever the `phoneRegions` preference says. Other layouts,
+such as digit groups separated by a non-breaking space, which French typography
+uses, or a trunk zero in brackets as in `+33 (0)1 23 45 67 89`, rely on the
+formats the detector supports, and `phoneRegions` supplies its region hints for
+national numbers. Those hints have no effect without a successful detector
+response, and no request is made when the text is over the semantic size limit
+or when all three semantic preferences are off.
 
 ## Confidence thresholds are a tuning choice
 
