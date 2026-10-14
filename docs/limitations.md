@@ -68,7 +68,7 @@ A SIRET needs no keyword or spacing, so a bare fourteen-digit number that passes
 Luhn, about one in ten, is masked as a SIRET: a compact timestamp such as
 `20241014125302`, or a fourteen-digit order number.
 
-## French phone numbers
+## Phone numbers
 
 The deterministic layer recognises, whatever the `phoneRegions` preference says,
 French national numbers written as five pairs of digits (`01 23 45 67 89`) and
@@ -83,6 +83,17 @@ layers. `phoneRegions` supplies the detector's region hints for national
 numbers. Those hints have no effect without a successful detector response, and
 no request is made when the text is over the semantic size limit or when all
 three semantic preferences are off.
+
+The default list is `FR,GB,DE,NL,BE,CH,IE`. Each country listed lets the
+detector read more runs of digits as national phone numbers, and the extension
+does not re-check the phone numbers the detector returns. In tests against the
+detector with invented identifiers, Spain turned a bare nine-digit number such
+as `987654321` into a phone number, Portugal one such as `600123456`, the United
+States and Canada an eleven-digit number starting with 1, Brazil a ten-digit
+one, Italy a ten-digit one starting with 32 to 39, and Austria an eight-digit
+one starting with 0. Those countries are left out of the default for that
+reason. Their numbers are still masked in international `+` form, and adding
+one of them to the list trades that identifier risk for its national format.
 
 ## Confidence thresholds are a tuning choice
 

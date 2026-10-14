@@ -185,7 +185,7 @@ No text to paste
 | `detectorUrl` | text | `http://127.0.0.1:5002` |
 | `detectorTimeoutMs` | text | `3500` |
 | `authToken` | password | empty |
-| `phoneRegions` | text | `FR` |
+| `phoneRegions` | text | `FR,GB,DE,NL,BE,CH,IE` |
 | `maskPersons` | checkbox | on |
 | `maskLocations` | checkbox | on |
 | `maskOrganizations` | checkbox | on |
