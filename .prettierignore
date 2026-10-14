@@ -1,0 +1,4 @@
+# Written by pnpm evals and copied unchanged: reformatting would hide whether
+# a committed report still matches the run it came from.
+evals/baseline.md
+evals/noise.md
