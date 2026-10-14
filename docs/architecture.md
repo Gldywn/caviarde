@@ -116,7 +116,9 @@ real mode rather than a disclaimer.
 **First-name propagation** runs after the merge. When a full name has been
 accepted, its first name is masked wherever it appears alone in the same text,
 sharing the same placeholder. An isolated first name scores too low for any
-usable threshold, but a full name elsewhere makes it certain.
+usable threshold, but a full name elsewhere makes it certain. A hyphenated first
+name is one name: `Jean` never claims the start of `Jean-Pierre`, which only the
+full name of a Jean-Pierre propagates to.
 
 ### Merging
 
