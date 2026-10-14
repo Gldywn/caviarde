@@ -154,6 +154,13 @@ describe("phone numbers", () => {
     ]);
   });
 
+  it("catches a Brazilian number with a two-digit bracketed area code", () => {
+    expect(found("ligar (11) 91234-5678 ou (21) 2345-6789")).toEqual([
+      ["PHONE", "(11) 91234-5678"],
+      ["PHONE", "(21) 2345-6789"],
+    ]);
+  });
+
   it("labels an international number whose digits pass the card check as a phone", () => {
     expect(isCardNumber("55 11 91234-5676")).toBe(true);
     expect(found("ligar +55 11 91234-5676")).toEqual([

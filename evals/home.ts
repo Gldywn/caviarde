@@ -447,6 +447,14 @@ const HOME: readonly HomeCase[] = [
     markup: "call [[PHONE:(234) 567-8901]] about order {{2345678901}}",
   },
   {
+    id: "phone-national-bracketed-area-code-br",
+    language: "pt",
+    layer: "local",
+    note: "Brazilian mobile and landline numbers with a two-digit area code in brackets",
+    markup:
+      "ligar para [[PHONE:(11) 91234-5678]] ou [[PHONE:(21) 2345-6789]], pedido {{2024-00184722}}",
+  },
+  {
     id: "phone-international-siren-tail",
     language: "es",
     layer: "local",

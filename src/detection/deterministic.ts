@@ -44,9 +44,10 @@ const CARD_CANDIDATE = /(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)/g;
 const PHONE_INTERNATIONAL =
   /(?<![\d+])\+\d{1,3}(?:[ .-]?\(\d{1,4}\))?(?:[ .-]?\d){6,14}(?!\d)/g;
 
-/** The brackets and the fixed grouping are the anchor: a bare ten-digit run is
- * as likely an order number or an epoch second. */
-const PHONE_AREA_CODE = /(?<!\w)\(\d{3}\) ?\d{3}[-.]\d{4}(?!\d)/g;
+/** `(234) 567-8901` in North America, `(11) 91234-5678` in Brazil. The brackets and the
+ * fixed grouping are the anchor: a bare digit run is as likely an order number. */
+const PHONE_AREA_CODE =
+  /(?<!\w)\((?:\d{3}\) ?\d{3}[-.]|\d{2}\) ?\d{4,5}-)\d{4}(?!\d)/g;
 
 /** The candidate can run past the IBAN into prose, so trailing tokens are trimmed
  * off until what remains validates. */
