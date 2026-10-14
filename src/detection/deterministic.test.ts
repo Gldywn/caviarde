@@ -3,6 +3,7 @@ import { applyMasking } from "../masking/apply";
 import { detectDeterministic } from "./deterministic";
 import { mergeSpans } from "./merge";
 import type { EntityType } from "./types";
+import { isCardNumber } from "./validators/card";
 
 function found(text: string): Array<[EntityType, string]> {
   return detectDeterministic(text).map((s) => [
@@ -94,6 +95,19 @@ describe("SIREN and SIRET", () => {
 
   it("ignores a bare Luhn-valid 9-digit order number", () => {
     expect(found("commande 123456782 expediee")).toEqual([]);
+  });
+
+  it("labels a SIRET that also passes the card check as SIRET", () => {
+    expect(isCardNumber("41234567000019")).toBe(true);
+    expect(found("SIRET 41234567000019")).toEqual([
+      ["SIRET", "41234567000019"],
+    ]);
+  });
+
+  it("labels a spaced SIRET as SIRET, not by its SIREN prefix", () => {
+    expect(found("etablissement 123 456 782 00010")).toEqual([
+      ["SIRET", "123 456 782 00010"],
+    ]);
   });
 });
 

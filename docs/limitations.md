@@ -26,6 +26,10 @@ to begin with an issuer prefix, so a number outside those ranges is left alone
 even when its check digit is right. The cost is the reverse case, a card from an
 issuer outside the listed ranges, which is not masked at all.
 
+One gap remains: a SIRET is accepted on its checksum alone, so a bare
+fourteen-digit number that passes Luhn is masked, as described under SIREN and
+SIRET.
+
 The semantic layer follows the same rules. The detector runs its own structured
 pass, and that pass is checksum-only, so its cards and IBANs are re-validated
 here before being accepted. Without that, turning the detector on would mask the
@@ -60,11 +64,36 @@ Handled by the deterministic layer rather than the detector, which reports a
 SIRET as a credit card (a SIRET is fourteen digits and Luhn-valid by
 construction, La Poste excepted) and does not detect a SIREN at all.
 
-## French phone numbers
+A SIRET needs no keyword or spacing, so a bare fourteen-digit number that passes
+Luhn, about one in ten, is masked as a SIRET: a compact timestamp such as
+`20241014125302`, or a fourteen-digit order number.
 
-The detector only sees numbers in international `+` form unless it is given a
-region hint, which the `phoneRegions` preference supplies. The deterministic
-layer recognises the French national format regardless.
+## Phone numbers
+
+The deterministic layer recognises, whatever the `phoneRegions` preference says,
+French national numbers written as five pairs of digits (`01 23 45 67 89`) and
+international `+` numbers, with nothing or an ordinary space, dot or hyphen as
+separator.
+
+Other layouts rely on the formats the detector supports: another grouping
+(`0 800 123 456`), groups separated by a non-breaking space, as French
+typography writes them, or a trunk zero in brackets (`+33 (0)1 23 45 67 89`).
+Groups separated by a narrow non-breaking space (U+202F) are missed by both
+layers. `phoneRegions` supplies the detector's region hints for national
+numbers. Those hints have no effect without a successful detector response, and
+no request is made when the text is over the semantic size limit or when all
+three semantic preferences are off.
+
+The default list is `FR,GB,DE,NL,BE,CH,IE`. Each country listed lets the
+detector read more runs of digits as national phone numbers, and the extension
+does not re-check the phone numbers the detector returns. In tests against the
+detector with invented identifiers, Spain turned a bare nine-digit number such
+as `987654321` into a phone number, Portugal one such as `600123456`, the United
+States and Canada an eleven-digit number starting with 1, Brazil a ten-digit
+one, Italy a ten-digit one starting with 32 to 39, and Austria an eight-digit
+one starting with 0. Those countries are left out of the default for that
+reason. Their numbers are still masked in international `+` form, and adding
+one of them to the list trades that identifier risk for its national format.
 
 ## Confidence thresholds are a tuning choice
 

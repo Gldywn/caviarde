@@ -64,6 +64,8 @@ src/
   summary.ts                 HUD text
   detection/
     types.ts                 EntityType, Span
+    finder.ts                Finder type, and simple() for a regex finder
+    fr.ts                    French finders: SIRET, SIREN, national phone numbers
     deterministic.ts         regex and checksum layer, including @mentions
     semantic.ts              detector results revalidated and bounded into spans
     coreference.ts           first-name propagation
@@ -184,7 +186,7 @@ No text to paste
 | `detectorUrl` | text | `http://127.0.0.1:5002` |
 | `detectorTimeoutMs` | text | `3500` |
 | `authToken` | password | empty |
-| `phoneRegions` | text | `FR` |
+| `phoneRegions` | text | `FR,GB,DE,NL,BE,CH,IE` |
 | `maskPersons` | checkbox | on |
 | `maskLocations` | checkbox | on |
 | `maskOrganizations` | checkbox | on |

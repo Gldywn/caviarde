@@ -59,8 +59,8 @@
       "type": "textfield",
       "required": false,
       "title": "Phone Regions",
-      "description": "Comma-separated ISO country codes. Without these, only numbers in +33 form are detected.",
-      "default": "FR"
+      "description": "Comma-separated ISO country codes whose national phone formats the detector reads. Without the detector, only common French and international + layouts are masked. Adding ES, PT, IT, AT, US, CA or BR also masks some numeric ids.",
+      "default": "FR,GB,DE,NL,BE,CH,IE"
     },
     {
       "name": "maskPersons",

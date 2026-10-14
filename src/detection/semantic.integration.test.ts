@@ -9,7 +9,9 @@ const OPTIONS: SemanticOptions = {
   baseUrl: BASE_URL,
   timeoutMs: 10_000,
   authToken: "",
-  phoneRegions: ["FR"],
+  // The shipped phoneRegions default: each region added lets the detector read
+  // more digit runs as phone numbers, so identifier survival is checked on it.
+  phoneRegions: ["FR", "GB", "DE", "NL", "BE", "CH", "IE"],
   maskPersons: true,
   maskLocations: true,
   maskOrganizations: true,

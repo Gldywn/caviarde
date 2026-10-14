@@ -68,6 +68,51 @@ For command or UI changes, verification also covers the affected command in
 Raycast, using invented clipboard data. Build success alone does not establish
 clipboard or UI behavior.
 
+## Adding a deterministic detector
+
+A deterministic detector is a finder, a function from text to spans, listed in
+`FINDERS` in `src/detection/deterministic.ts`. National rules live in a module
+per country: `src/detection/fr.ts` holds the French ones, and another country
+gets a module of the same shape. A new detector touches these places:
+
+1. **Candidate pattern.** A global regex covering the written forms, bounded so
+   it cannot start or end inside a longer run, as `(?<!\d)` and `(?!\d)` do for
+   digits. `simple()` in `src/detection/finder.ts` turns it into a finder; a
+   finder that reads the surrounding text, like `findSiren`, is written out in
+   full. A regex called with `test()` stays non-global, since a global one keeps
+   its `lastIndex` from one call to the next.
+2. **Validator.** The checksum goes in `src/detection/validators/`, as a pure
+   function. A checksum alone never qualifies a match: Luhn is one digit, so
+   about one arbitrary number in ten passes it. A structural rule comes with
+   it, such as an issuer prefix for cards, or a keyword or the spaced form for
+   a SIREN. `findSiret` currently breaks this rule: it accepts a bare
+   fourteen-digit number on its checksum alone, as `docs/limitations.md`
+   records.
+3. **Position in `FINDERS`.** The order is behaviour: the first finder to claim
+   a range keeps it, and later overlapping matches are dropped. When two
+   finders can match the same text, the one whose label should win goes first.
+   A business identifier that is Luhn-valid comes before `CARD`, or one
+   starting with an issuer prefix is reported as a card; SIRET comes before
+   SIREN because a spaced SIRET starts with a SIREN.
+4. **Entity type.** The type goes in `ENTITY_TYPES` in
+   `src/detection/types.ts`. Its name is also the placeholder prefix.
+5. **HUD wording.** `NOUNS` in `src/summary.ts` takes the singular and plural,
+   and `ORDER` takes the type. TypeScript enforces `NOUNS` but not `ORDER`, and
+   a type missing from `ORDER` is left out of the HUD count.
+6. **Tests.** `deterministic.test.ts` covers, through `detectDeterministic`, a
+   match, a wrong check digit when the format has one, and a value a later
+   finder would also accept, such as one passing the card check, which proves
+   the position. `summary.test.ts` covers the HUD line. Technical identifiers
+   of the same shape go in `identifiers.fixture.ts`, chosen so they satisfy the
+   checksum. A test asserts that they do before asserting they are left alone:
+   the validator's test when the structural rule lives in the validator, as in
+   `validators/card.test.ts`, or `deterministic.test.ts` when it lives in the
+   finder, as the SIREN keyword guard does. Otherwise the survival test passes
+   because the checksum failed, not because the structural rule held.
+7. **Documentation.** The detection lists in `README.md` and
+   `docs/architecture.md`, and in `docs/limitations.md` what the structural
+   rule knowingly lets through.
+
 ## Pull requests
 
 The [PR template](.github/PULL_REQUEST_TEMPLATE.md) records the problem, the
