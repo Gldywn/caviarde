@@ -1,7 +1,14 @@
-import { execFile } from "node:child_process";
+import { execFile, spawnSync } from "node:child_process";
+import { readFileSync, writeFileSync } from "node:fs";
 import { promisify } from "node:util";
 import { describe, expect, it, vi } from "vitest";
-import { containerArgs, imageSize, readPullProgress } from "./docker";
+import {
+  containerArgs,
+  imageSize,
+  pullIsAlive,
+  readPullProgress,
+  startPull,
+} from "./docker";
 import {
   CONTAINER_NAME,
   CONTAINER_PORT,
@@ -250,5 +257,73 @@ describe("credential helper failure", () => {
     expect(readPullProgress(file)?.error).toContain(
       "docker-credential-osxkeychain",
     );
+  });
+});
+
+describe("pull liveness", () => {
+  const journal = async () => {
+    const fs = await import("node:fs/promises");
+    const os = await import("node:os");
+    const path = await import("node:path");
+    return path.join(
+      await fs.mkdtemp(path.join(os.tmpdir(), "cvd-")),
+      "pull.log",
+    );
+  };
+
+  it("records the PID of the pull it starts", async () => {
+    const log = await journal();
+    // echo stands in for docker: it accepts the arguments and exits.
+    startPull("/bin/echo", log);
+    expect(readFileSync(`${log}.pid`, "utf8")).toMatch(/^[1-9]\d*$/);
+  });
+
+  it("reads a pull whose process exists as alive", async () => {
+    const log = await journal();
+    writeFileSync(`${log}.pid`, String(process.pid));
+    expect(pullIsAlive(log)).toBe(true);
+  });
+
+  it("reads a pull whose process has exited as dead", async () => {
+    const log = await journal();
+    const exited = spawnSync("/usr/bin/true");
+    expect(exited.error).toBeUndefined();
+    expect(exited.status).toBe(0);
+    expect(exited.pid).toBeGreaterThan(0);
+    writeFileSync(`${log}.pid`, String(exited.pid));
+    expect(pullIsAlive(log)).toBe(false);
+  });
+
+  it("reads a process it may not signal as alive", async () => {
+    const log = await journal();
+    writeFileSync(`${log}.pid`, String(process.pid));
+    const kill = vi.spyOn(process, "kill").mockImplementation(() => {
+      throw Object.assign(new Error("not permitted"), { code: "EPERM" });
+    });
+    try {
+      expect(pullIsAlive(log)).toBe(true);
+    } finally {
+      kill.mockRestore();
+    }
+  });
+
+  it("reads a journal without a PID file as dead", async () => {
+    expect(pullIsAlive(await journal())).toBe(false);
+  });
+
+  it.each(["", "abc", "0", "-1", "1.5", "9007199254740993"])(
+    "reads an invalid PID %j as dead",
+    async (raw) => {
+      const log = await journal();
+      writeFileSync(`${log}.pid`, raw);
+      expect(pullIsAlive(log)).toBe(false);
+    },
+  );
+
+  it("replaces an earlier PID when the spawn fails, rather than keeping it", async () => {
+    const log = await journal();
+    writeFileSync(`${log}.pid`, String(process.pid));
+    startPull("/nonexistent/docker", log);
+    expect(pullIsAlive(log)).toBe(false);
   });
 });

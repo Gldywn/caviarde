@@ -5,6 +5,7 @@ import {
   mkdirSync,
   openSync,
   readFileSync,
+  writeFileSync,
 } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
@@ -96,6 +97,8 @@ export async function imageSize(docker: string): Promise<string | null> {
   }
 }
 
+const pidPath = (logPath: string) => `${logPath}.pid`;
+
 /** Detached, with its output journalled: the pull survives the window closing,
  * and the log is what lets the view show progress when it reopens. */
 export function startPull(docker: string, logPath: string): void {
@@ -106,7 +109,36 @@ export function startPull(docker: string, logPath: string): void {
     stdio: ["ignore", out, out],
     env: dockerEnv(docker),
   });
+  // A failed spawn has no PID and emits "error", which would crash the command.
+  child.on("error", () => {});
+  writeFileSync(
+    pidPath(logPath),
+    child.pid === undefined ? "" : String(child.pid),
+  );
   child.unref();
+}
+
+/** A journal with neither completion nor error is a running pull only if the
+ * process `startPull` recorded still exists. */
+export function pullIsAlive(logPath: string): boolean {
+  let raw: string;
+  try {
+    raw = readFileSync(pidPath(logPath), "utf8").trim();
+  } catch {
+    return false;
+  }
+  const pid = Number(raw);
+  if (!/^\d+$/.test(raw) || !Number.isSafeInteger(pid) || pid < 1) return false;
+
+  // Existence, not identity: a dead pull whose PID now belongs to another
+  // process, after a reboot or not, reads as alive and is still followed.
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    // EPERM: something exists at that PID, and refusal is not proof of death.
+    return (error as NodeJS.ErrnoException).code === "EPERM";
+  }
 }
 
 export interface PullProgress {
