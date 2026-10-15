@@ -172,16 +172,20 @@ describe("phone numbers", () => {
       found(`ecart ${narrow} €, ${nbsp} €, +1 234 567,89 EUR, +7 654 321 %`),
     ).toEqual([]);
     expect(
-      found("+1 234 567 890 €, +1 234 567.89, solde +33 123 456 789 €"),
+      found("+123 456 789,12 €, +1 234 567.89, solde +12 345 678 €"),
     ).toEqual([]);
   });
 
   it("masks a whole phone followed by a comma and digits, as in a CSV row", () => {
     expect(
-      found("Emily Clarke,+44 20 1234 5678,42\n+442012345678,10115"),
+      found(
+        "Emily Clarke,+44 20 1234 5678,42\n+442012345678,10115\nLucía Fernández,+34 612 345 679,42,Madrid\n+34 612 345 679 €",
+      ),
     ).toEqual([
       ["PHONE", "+44 20 1234 5678"],
       ["PHONE", "+442012345678"],
+      ["PHONE", "+34 612 345 679"],
+      ["PHONE", "+34 612 345 679"],
     ]);
   });
 

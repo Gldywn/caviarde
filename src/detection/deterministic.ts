@@ -50,10 +50,11 @@ const PHONE_INTERNATIONAL =
   /(?<![\d+])\+\d{1,3}(?:[ .\u00a0\u202f-]?\(\d{1,4}\))?(?:[ .\u00a0\u202f-]?\d){6,14}(?!\d)/g;
 
 const SIGNED_AMOUNT =
-  /\+\d{1,3}(?:[ .\u00a0\u202f]\d{3})+(?:[.,]\d{1,2}(?!\d)|[ \u00a0\u202f]?[\u20ac$\u00a3%])/y;
+  /\+\d{1,3}(?:[ .\u00a0\u202f]\d{3}){1,2}(?:[.,]\d{1,2}(?!\d)|[ \u00a0\u202f]?[\u20ac$\u00a3%])/y;
 
-/** `+1 234 567,89 EUR`: a sign, groups of three and a decimal part or a currency sign make an
- * amount. The whole run is judged after matching, so no shorter phone is tried in its place. */
+/** `+1 234 567,89 EUR`: a sign, one or two groups of three and a decimal part or a currency sign
+ * make an amount; a third group is a phone, `+34 612 345 678`. Judged on the whole run, so no
+ * shorter phone is tried in its place. */
 function withoutAmounts(find: Finder): Finder {
   return (text) =>
     find(text).filter(({ start, end }) => {

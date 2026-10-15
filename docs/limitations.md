@@ -112,19 +112,21 @@ cannot know the national length: a number written right after the phone,
 separated by a single space, can lose its first group to it.
 
 A signed amount is left alone when the whole run reads as one: a sign, one to
-three digits and groups of exactly three, with a decimal part of one or two
-digits or a `€`, `$`, `£` or `%` sign right after (`+1 234 567,89`,
-`+1 234 567 890 €`). A phone grouped otherwise keeps its mask whatever follows
-it, as in a CSV row (`+44 20 1234 5678,42`). An amount followed by another
-currency sign or a currency code, `+1 234 567 EUR`, is still read as a phone
-number.
+three digits and one or two groups of exactly three, with a decimal part of one
+or two digits or a `€`, `$`, `£` or `%` sign right after (`+1 234 567,89`,
+`+12 345 678 €`). A third group of three makes a phone number, as Spain and
+Portugal write them, so `+34 612 345 678,42` in a CSV row keeps its mask; the
+cost is that a signed amount past a billion, `+1 234 567 890 €`, is masked as a
+phone number. A phone grouped otherwise keeps its mask whatever follows it
+(`+44 20 1234 5678,42`). An amount followed by another currency sign or a
+currency code, `+1 234 567 EUR`, is still read as a phone number.
 
 Everything else relies on the formats the detector supports, or is missed:
 
 - a bare run of digits (`2345678901`), which is as likely an order number or an
   epoch second;
 - a North American number written with hyphens or dots alone
-  (`234-567-8901`), or with a space after the area code (`(234) 567 8901`);
+  (`234-567-8901`), or with a space where the hyphen goes (`(234) 567 8901`);
   internal references also use the first layout;
 - a Brazilian landline (`(21) 2345-6789`), whose four digits and four are
   written like a year or page range (`(12) 2019-2020`);

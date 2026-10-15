@@ -476,7 +476,7 @@ const HOME: readonly HomeCase[] = [
     layer: "local",
     note: "a whole phone before a comma and digits in a CSV row, and a number before a glued extension",
     markup:
-      "contact,[[PHONE:+44 20 1234 5678]],42\ncontact,[[PHONE:+442012345678]],10115\ndesk [[PHONE:(234)567-8901]]x204",
+      "contact,[[PHONE:+44 20 1234 5678]],42\ncontact,[[PHONE:+442012345678]],10115\ncontacto,[[PHONE:+34 612 345 679]],42\ndesk [[PHONE:(234)567-8901]]x204",
   },
   {
     id: "phone-french-then-siren",
