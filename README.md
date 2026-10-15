@@ -95,6 +95,11 @@ window is closed. Once installed, its size is read from the container runtime.
 The managed container listens only on `127.0.0.1`, runs read-only with every
 capability dropped, and uses an image pinned by sha256 digest rather than by tag.
 
+A detector that already answers is left as it is: the container keeps the image
+and confidence thresholds of the version that created it. After an update that
+changes either, remove it with `docker rm -f caviarde-detector` and run Set up
+Detector again.
+
 <details>
 <summary><b>Working on Caviarde itself</b></summary>
 

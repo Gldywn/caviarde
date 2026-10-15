@@ -83,9 +83,10 @@ outcome is how the loopback bug survived a green unit-test suite: the
 deterministic layer had been fixed, the detector still reported `127.0.0.1`, and
 only an end-to-end run against a live detector showed it.
 
-The confidence thresholds in `compose.yaml` come from a small sample, not a
-benchmark, and the model's scores are context-dependent: the same string lands on
-either side of a threshold in two different documents. One sample proves nothing.
+The confidence thresholds in `compose.yaml` were measured with the evaluation
+harness on synthetic corpora, and the model's scores are context-dependent: the
+same string lands on either side of a threshold in two different documents. One
+sample proves nothing; a floor change is compared with `pnpm evals compare`.
 
 ## Practical notes
 

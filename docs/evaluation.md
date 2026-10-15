@@ -156,6 +156,30 @@ file of details per source and mode under `runs/<timestamp>/` in the cache. Per-
 leaked values, stay there. The repository holds aggregate reports and opaque
 record ids only.
 
+Two configurations are compared from two runs over the same cases, detector
+on, with the difference bootstrapped on the same resampled groups:
+
+```bash
+pnpm evals compare <candidate run directory> <reference run directory>
+```
+
+A case that timed out in either run is left out of both, and each run's
+semantic skips are listed apart, timeouts and a detector that went away
+included. The figures therefore cover the cases neither run timed out on; a
+case skipped for another reason stays paired and counts as a miss.
+The floors do set the model's decoding threshold (the lowest floor minus 0.1),
+so they could in principle change how long a request takes. At the floors
+measured so far they did not: the two recorded baselines, at the old and the
+current floors, show the same REDACT latency (median 669 and 671 ms, p95 2,986
+and 2,954 ms). A change is still judged on the headline figures as well, where
+a timeout counts as a leak, and each run's skip counts show a configuration
+that times out more.
+
+The comparison names both runs with their split, pipeline commit and digests.
+A run's `environment.json` does not record confidence floors set by a compose
+override file, so the floors each compared run was started with have to be
+recorded alongside it.
+
 ### Noise check
 
 `pnpm evals noise` replays a frozen sample, the home dataset and six

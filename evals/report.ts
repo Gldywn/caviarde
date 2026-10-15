@@ -391,6 +391,77 @@ function ingestion(summary: Summary): string {
   );
 }
 
+const COMPARED_METRICS: ReadonlyArray<[string, Metric]> = [
+  ["Leaked chars", leakMicro],
+  ["Leaked per mention", leakMacro],
+  ["Over-masking", overMasking],
+];
+
+/** Paired by group over the cases neither run timed out on. Each run's skips
+ * are listed apart, so a slower configuration or a detector that went away
+ * still shows. */
+export function renderComparison(
+  candidate: readonly CaseRecord[],
+  reference: readonly CaseRecord[],
+): string {
+  const key = (s: CaseScore) => JSON.stringify([s.source, s.id]);
+  const late = (records: readonly CaseRecord[]) =>
+    byMode(records, "on").filter((s) => s.skipped === "timeout");
+  const timedOut = new Map(
+    [...late(candidate), ...late(reference)].map((s) => [key(s), s]),
+  );
+  const tally = (scores: Iterable<CaseScore>, by: (s: CaseScore) => string) =>
+    count(new Map([...groupBy(scores, by)].map(([k, v]) => [k, v.length])));
+  // Oversized texts are skipped identically in both runs, so they say nothing.
+  const skips = (records: readonly CaseRecord[]) =>
+    tally(
+      byMode(records, "on").filter(
+        (s) => s.skipped !== null && s.skipped !== "too-large",
+      ),
+      (s) => `${s.source} ${s.skipped}`,
+    );
+  const answered = (records: readonly CaseRecord[]) =>
+    groupBy(
+      byMode(records, "on").filter((s) => !timedOut.has(key(s))),
+      (s) => s.source,
+    );
+  const a = answered(candidate);
+  const z = answered(reference);
+  const rows = [...new Set([...a.keys(), ...z.keys()])].flatMap((source) =>
+    COMPARED_METRICS.map(([name, metric]) => {
+      const left = a.get(source) ?? [];
+      const right = z.get(source) ?? [];
+      const x = metric(left);
+      const y = metric(right);
+      const bounds = pairedInterval(left, right, metric);
+      return [
+        source,
+        name,
+        pct(x),
+        pct(y),
+        x === null || y === null ? "n/a" : pct(x - y),
+        bounds === null ? "n/a" : `[${pct(bounds[0])}, ${pct(bounds[1])}]`,
+      ];
+    }),
+  );
+  return (
+    table(
+      [
+        "Source",
+        "Figure",
+        "Candidate",
+        "Reference",
+        "Difference",
+        "95 % interval",
+      ],
+      rows,
+    ) +
+    `\n\nSemantic skipped, candidate: ${skips(candidate)}; reference: ` +
+    `${skips(reference)}. Left out of both, timed out in either run: ` +
+    `${tally(timedOut.values(), (s) => s.source)}.`
+  );
+}
+
 /** Aggregates and opaque ids only: per-case details stay in the cache. */
 export function renderReport(summary: Summary): string {
   const bySource = groupBy(summary.records, (r) => r.score.source);

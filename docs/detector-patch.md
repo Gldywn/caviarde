@@ -54,6 +54,8 @@ are therefore missed, and some internal team names are masked. Scores also vary
 with surrounding text, so the same string can fall on either side of the
 threshold in two different documents.
 
-Over-masking is the harmless direction and the one this threshold favours.
-Product and tooling names stayed clear of detection in every sample tested, which
-`src/detection/semantic.integration.test.ts` asserts.
+Over-masking is the harmless direction and the one this threshold favours. The
+product and tooling names in `src/detection/semantic.integration.test.ts` stay
+clear of detection, which that test asserts. Others do not always: a CRM or a CI
+service named in a ticket, or a team such as "Support" or "Platform team", is
+sometimes masked as an organisation.

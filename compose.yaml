@@ -20,10 +20,11 @@ services:
       - ./assets/detector-patch/gliner_layer.py:/opt/venv/lib/python3.14/site-packages/detector/gliner_layer.py:ro
 
     environment:
-      # Upstream floors are tuned for precision and drop most French names.
-      GLINER_FLOOR_PERSON: "0.95"
-      GLINER_FLOOR_LOCATION: "0.70"
-      GLINER_FLOOR_ADDRESS: "0.70"
+      # Measured with the evaluation harness, see docs/limitations.md. Upstream
+      # floors drop most French names. Keep FLOORS in src/detector/image.ts equal.
+      GLINER_FLOOR_PERSON: "0.80"
+      GLINER_FLOOR_LOCATION: "0.60"
+      GLINER_FLOOR_ADDRESS: "0.30"
       GLINER_FLOOR_ORGANIZATION: "0.50"
 
     read_only: true
