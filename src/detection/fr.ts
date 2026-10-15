@@ -11,10 +11,10 @@ const SIREN_CONTEXT_WINDOW = 32;
 
 /** French typography separates the pairs with a non-breaking space, or a narrow one. */
 const PHONE_FRENCH = /(?<![\d+])0[1-9](?:[ .\u00a0\u202f-]?\d{2}){4}(?!\d)/g;
-/** Nine digits follow +33, so the number ends there and a SIREN or street number written
- * after it on the same line keeps its own rule. */
+/** Nine digits follow +33 and its trunk zero, so the number ends there and a SIREN or street
+ * number written after it on the same line keeps its own rule. */
 const PHONE_FRENCH_INTERNATIONAL =
-  /(?<![\d+])\+33(?:[ .\u00a0\u202f-]?\(0\))?[ .\u00a0\u202f-]?[1-9](?:[ .\u00a0\u202f-]?\d){8}(?!\d)/g;
+  /(?<![\d+])\+33(?:[ .\u00a0\u202f-]?(?:\(0\)|0))?[ .\u00a0\u202f-]?[1-9](?:[ .\u00a0\u202f-]?\d){8}(?!\d)/g;
 
 function digitsOf(value: string): string {
   return value.replace(/\D/g, "");

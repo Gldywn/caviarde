@@ -45,21 +45,35 @@ const IBAN_CANDIDATE =
 
 const CARD_CANDIDATE = /(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)/g;
 
-/** The bracketed group is a trunk zero, `+44 (0)20`, or an area code, `+1 (234)`. A decimal
- * part or a currency sign after the digits makes a signed amount, `+1 234 567,89 EUR`. */
+/** The bracketed group is a trunk zero, `+44 (0)20`, or an area code, `+1 (234)`. */
 const PHONE_INTERNATIONAL =
-  /(?<![\d+])\+\d{1,3}(?:[ .\u00a0\u202f-]?\(\d{1,4}\))?(?:[ .\u00a0\u202f-]?\d){6,14}(?![\d\u20ac$\u00a3%]|[.,]\d|[ \u00a0\u202f][\u20ac$\u00a3%])/g;
+  /(?<![\d+])\+\d{1,3}(?:[ .\u00a0\u202f-]?\(\d{1,4}\))?(?:[ .\u00a0\u202f-]?\d){6,14}(?!\d)/g;
+
+const SIGNED_AMOUNT =
+  /\+\d{1,3}(?:[ .\u00a0\u202f]\d{3})+(?:[.,]\d{1,2}(?!\d)|[ \u00a0\u202f]?[\u20ac$\u00a3%])/y;
+
+/** `+1 234 567,89 EUR`: a sign, groups of three and a decimal part or a currency sign make an
+ * amount. The whole run is judged after matching, so no shorter phone is tried in its place. */
+function withoutAmounts(find: Finder): Finder {
+  return (text) =>
+    find(text).filter(({ start, end }) => {
+      SIGNED_AMOUNT.lastIndex = start;
+      const amount = SIGNED_AMOUNT.exec(text);
+      return amount === null || amount[0].length < end - start;
+    });
+}
 
 /** `(234) 567-8901` in North America, `(11) 91234-5678` for a Brazilian mobile. The brackets
  * and the fixed grouping are the anchor: a bare digit run is as likely an order number, and a
- * Brazilian landline, four digits and four, is written like a year or page range. */
+ * Brazilian landline, four digits and four, is written like a year or page range. A letter
+ * after the digits makes a reference, except the `x` of a glued extension, `x204`. */
 const PHONE_AREA_CODE =
-  /(?<!\w)\((?:\d{3}\)[ \u00a0\u202f]?\d{3}[-.]|\d{2}\)[ \u00a0\u202f]?9\d{4}-)\d{4}(?!\w)/g;
+  /(?<![\p{L}\p{N}_])\((?:\d{3}\)[ \u00a0\u202f]?\d{3}[-.]|\d{2}\)[ \u00a0\u202f]?9\d{4}-)\d{4}(?:(?=[xX]\d)|(?![\p{L}\p{N}_]))/gu;
 
 /** `020-1234567`, `030/12345678`. A zero-padded reference has a second zero, and no
  * subscriber number starts with one, so neither position may hold a zero. */
 const PHONE_TRUNK_ZERO =
-  /(?<![\w/.-])0[1-9]\d{0,3}[-/][1-9]\d{2}[ \u00a0\u202f]?\d{3,5}(?![\w/-])/g;
+  /(?<![\p{L}\p{N}_/.-])0[1-9]\d{0,3}[-/][1-9]\d{2}[ \u00a0\u202f]?\d{3,5}(?:(?=[xX]\d)|(?![\p{L}\p{N}_/-]))/gu;
 
 function hasNationalLength(match: string): boolean {
   const digits = match.replace(/\D/g, "").length;
@@ -101,8 +115,8 @@ const FINDERS: readonly Finder[] = [
   simple("IP", IPV6_CANDIDATE, isMaskableIpv6),
   simple("IP", IPV4, isMaskableIpv4),
   findIban,
-  findFrenchInternationalPhone,
-  simple("PHONE", PHONE_INTERNATIONAL),
+  withoutAmounts(findFrenchInternationalPhone),
+  withoutAmounts(simple("PHONE", PHONE_INTERNATIONAL)),
   findSiret,
   findSiren,
   simple("CARD", CARD_CANDIDATE, isCardNumber),

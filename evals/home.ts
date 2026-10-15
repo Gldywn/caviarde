@@ -471,6 +471,14 @@ const HOME: readonly HomeCase[] = [
       "Bel [[PHONE:020-1234567]] of [[PHONE:030/12345678]], factuur {{0042-1234567}}, order {{020-1234567A}}",
   },
   {
+    id: "phone-csv-and-glued-extension",
+    language: "en",
+    layer: "local",
+    note: "a whole phone before a comma and digits in a CSV row, and a number before a glued extension",
+    markup:
+      "contact,[[PHONE:+44 20 1234 5678]],42\ncontact,[[PHONE:+442012345678]],10115\ndesk [[PHONE:(234)567-8901]]x204",
+  },
+  {
     id: "phone-french-then-siren",
     language: "fr",
     layer: "local",

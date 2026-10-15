@@ -156,6 +156,13 @@ describe("phone numbers", () => {
     expect(found("+33 6 12 34 56 78 12 rue de la Paix")).toEqual([
       ["PHONE", "+33 6 12 34 56 78"],
     ]);
+    expect(found("+33 06 12 34 56 78 123 456 782")).toEqual([
+      ["PHONE", "+33 06 12 34 56 78"],
+      ["SIREN", "123 456 782"],
+    ]);
+    expect(found("+33 12 34 56 78 901")).toEqual([
+      ["PHONE", "+33 12 34 56 78 901"],
+    ]);
   });
 
   it("leaves signed amounts alone, typographic spaces included", () => {
@@ -164,6 +171,18 @@ describe("phone numbers", () => {
     expect(
       found(`ecart ${narrow} €, ${nbsp} €, +1 234 567,89 EUR, +7 654 321 %`),
     ).toEqual([]);
+    expect(
+      found("+1 234 567 890 €, +1 234 567.89, solde +33 123 456 789 €"),
+    ).toEqual([]);
+  });
+
+  it("masks a whole phone followed by a comma and digits, as in a CSV row", () => {
+    expect(
+      found("Emily Clarke,+44 20 1234 5678,42\n+442012345678,10115"),
+    ).toEqual([
+      ["PHONE", "+44 20 1234 5678"],
+      ["PHONE", "+442012345678"],
+    ]);
   });
 
   it("catches a bracketed trunk zero after the country code", () => {
@@ -219,7 +238,18 @@ describe("phone numbers", () => {
   });
 
   it("leaves a reference with a letter after its digits alone", () => {
-    expect(found("order_id=020-1234567A, ref (234) 567-8901B")).toEqual([]);
+    expect(
+      found(
+        "order_id=020-1234567A, ref (234) 567-8901B, lot 020-1234567É, ref (234) 567-8901é",
+      ),
+    ).toEqual([]);
+  });
+
+  it("masks the number before a glued extension", () => {
+    expect(found("call (234)567-8901x204 or 020-1234567x12")).toEqual([
+      ["PHONE", "(234)567-8901"],
+      ["PHONE", "020-1234567"],
+    ]);
   });
 
   it("reads typographic spaces in the national layouts", () => {
