@@ -170,6 +170,22 @@ describe("phone numbers", () => {
     ]);
   });
 
+  it("catches a trunk zero and area code before a hyphen or a slash", () => {
+    expect(found("bel 020-1234567 of 020-123 4567, Tel. 030/12345678")).toEqual(
+      [
+        ["PHONE", "020-1234567"],
+        ["PHONE", "020-123 4567"],
+        ["PHONE", "030/12345678"],
+      ],
+    );
+  });
+
+  it("leaves zero-padded and short hyphenated references alone", () => {
+    expect(
+      found("factuur 0042-1234567, ref 020-0123456, lot 012-345678"),
+    ).toEqual([]);
+  });
+
   it("labels an international number whose digits pass the card check as a phone", () => {
     expect(isCardNumber("55 11 91234-5676")).toBe(true);
     expect(found("ligar +55 11 91234-5676")).toEqual([

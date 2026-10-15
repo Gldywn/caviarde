@@ -463,6 +463,14 @@ const HOME: readonly HomeCase[] = [
       "ligar para [[PHONE:(11) 91234-5678]] ou [[PHONE:(21) 2345-6789]], pedido {{2024-00184722}}",
   },
   {
+    id: "phone-trunk-zero-hyphen",
+    language: "nl",
+    layer: "local",
+    note: "trunk zero and area code before a hyphen or a slash, next to a zero-padded reference",
+    markup:
+      "Bel [[PHONE:020-1234567]] of [[PHONE:030/12345678]], factuur {{0042-1234567}}",
+  },
+  {
     id: "phone-international-siren-tail",
     language: "es",
     layer: "local",

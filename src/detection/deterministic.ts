@@ -49,6 +49,16 @@ const PHONE_INTERNATIONAL =
 const PHONE_AREA_CODE =
   /(?<!\w)\((?:\d{3}\) ?\d{3}[-.]|\d{2}\) ?\d{4,5}-)\d{4}(?!\d)/g;
 
+/** `020-1234567`, `030/12345678`. A zero-padded reference has a second zero, and no
+ * subscriber number starts with one, so neither position may hold a zero. */
+const PHONE_TRUNK_ZERO =
+  /(?<![\w/.-])0[1-9]\d{0,3}[-/][1-9]\d{2} ?\d{3,5}(?![\d/-])/g;
+
+function hasNationalLength(match: string): boolean {
+  const digits = match.replace(/\D/g, "").length;
+  return digits === 10 || digits === 11;
+}
+
 /** The candidate can run past the IBAN into prose, so trailing tokens are trimmed
  * off until what remains validates. */
 const findIban: Finder = (text) => {
@@ -90,6 +100,7 @@ const FINDERS: readonly Finder[] = [
   simple("CARD", CARD_CANDIDATE, isCardNumber),
   findFrenchPhone,
   simple("PHONE", PHONE_AREA_CODE),
+  simple("PHONE", PHONE_TRUNK_ZERO, hasNationalLength),
 ];
 
 export function detectDeterministic(text: string): Span[] {
