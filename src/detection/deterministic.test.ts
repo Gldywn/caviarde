@@ -158,6 +158,14 @@ describe("phone numbers", () => {
     ]);
   });
 
+  it("leaves signed amounts alone, typographic spaces included", () => {
+    const narrow = ["+1", "234", "567"].join("\u202f");
+    const nbsp = ["+12", "345", "678,50"].join("\u00a0");
+    expect(
+      found(`ecart ${narrow} €, ${nbsp} €, +1 234 567,89 EUR, +7 654 321 %`),
+    ).toEqual([]);
+  });
+
   it("catches a bracketed trunk zero after the country code", () => {
     expect(found("+44 (0)20 1234 5678 ou +33 (0)1 23 45 67 89")).toEqual([
       ["PHONE", "+44 (0)20 1234 5678"],

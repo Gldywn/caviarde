@@ -552,6 +552,14 @@ const HOME: readonly HomeCase[] = [
     markup:
       "Montant 1 234,56 EUR le 14/10/2026 a 10:30:00, delai 48 h, version 3.2.",
   },
+  {
+    id: "clean-signed-amounts",
+    language: "fr",
+    layer: "local",
+    note: "signed amounts typeset with narrow and non-breaking spaces, which a + would make a phone",
+    markup:
+      "Ecart sur le mois : +1\u202f234\u202f567 €, puis +12\u00a0345\u00a0678,50 €.",
+  },
 
   // Offsets past astral characters, and the size cap of the semantic layer.
   {
