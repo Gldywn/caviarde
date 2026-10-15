@@ -50,10 +50,11 @@ const CARD_CANDIDATE = /(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)/g;
 const PHONE_INTERNATIONAL =
   /(?<![\d+])\+\d{1,3}(?:[ .\u00a0\u202f-]?\(\d{1,4}\))?(?:[ .\u00a0\u202f-]?\d){6,14}(?![\d\u20ac$\u00a3%]|[.,]\d|[ \u00a0\u202f][\u20ac$\u00a3%])/g;
 
-/** `(234) 567-8901` in North America, `(11) 91234-5678` in Brazil. The brackets and the
- * fixed grouping are the anchor: a bare digit run is as likely an order number. */
+/** `(234) 567-8901` in North America, `(11) 91234-5678` for a Brazilian mobile. The brackets
+ * and the fixed grouping are the anchor: a bare digit run is as likely an order number, and a
+ * Brazilian landline, four digits and four, is written like a year or page range. */
 const PHONE_AREA_CODE =
-  /(?<!\w)\((?:\d{3}\) ?\d{3}[-.]|\d{2}\) ?\d{4,5}-)\d{4}(?!\d)/g;
+  /(?<!\w)\((?:\d{3}\) ?\d{3}[-.]|\d{2}\) ?9\d{4}-)\d{4}(?!\d)/g;
 
 /** `020-1234567`, `030/12345678`. A zero-padded reference has a second zero, and no
  * subscriber number starts with one, so neither position may hold a zero. */

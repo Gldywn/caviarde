@@ -458,9 +458,9 @@ const HOME: readonly HomeCase[] = [
     id: "phone-national-bracketed-area-code-br",
     language: "pt",
     layer: "local",
-    note: "Brazilian mobile and landline numbers with a two-digit area code in brackets",
+    note: "Brazilian mobile number with a two-digit area code in brackets, next to a bracketed count before a year range",
     markup:
-      "ligar para [[PHONE:(11) 91234-5678]] ou [[PHONE:(21) 2345-6789]], pedido {{2024-00184722}}",
+      "ligar para [[PHONE:(11) 91234-5678]], temporada {{(12) 2019-2020}}",
   },
   {
     id: "phone-trunk-zero-hyphen",

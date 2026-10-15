@@ -186,11 +186,18 @@ describe("phone numbers", () => {
     ]);
   });
 
-  it("catches a Brazilian number with a two-digit bracketed area code", () => {
-    expect(found("ligar (11) 91234-5678 ou (21) 2345-6789")).toEqual([
+  it("catches a Brazilian mobile number with a two-digit bracketed area code", () => {
+    expect(found("ligar (11) 91234-5678")).toEqual([
       ["PHONE", "(11) 91234-5678"],
-      ["PHONE", "(21) 2345-6789"],
     ]);
+  });
+
+  it("leaves bracketed counts before year and page ranges alone", () => {
+    expect(
+      found(
+        "Saison (12) 2019-2020, dossier (15) 2024-0042, J. 275 (12) 8765-8771",
+      ),
+    ).toEqual([]);
   });
 
   it("catches a trunk zero and area code before a hyphen or a slash", () => {
