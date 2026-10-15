@@ -190,7 +190,9 @@ to 5.2 % and from 2.0 % to 2.4 %. The final holdout, run once at these floors,
 leaves 19.8 %, 10.8 % and 12.5 % visible. On REDACT the gap with development
 comes from texts over the 6,000-character cap, which the semantic layer never
 sees: 24 in the holdout against 14; under the cap the two splits leave 15.9 %
-and 15.5 % visible. `evals/baseline.md` holds the full development figures.
+and 15.5 % visible. These are the figures of the floor change itself;
+`evals/baseline.md` holds those of the current pipeline, which later detection
+changes have moved.
 
 Every floor sits one step above a value that breaks something:
 
