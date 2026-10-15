@@ -397,7 +397,7 @@ const COMPARED_METRICS: ReadonlyArray<[string, Metric]> = [
   ["Over-masking", overMasking],
 ];
 
-/** Paired by group over the cases both runs answered in time. Each run's skips
+/** Paired by group over the cases neither run timed out on. Each run's skips
  * are listed apart, so a slower configuration or a detector that went away
  * still shows. */
 export function renderComparison(

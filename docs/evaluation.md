@@ -165,7 +165,8 @@ pnpm evals compare <candidate run directory> <reference run directory>
 
 A case that timed out in either run is left out of both, and each run's
 semantic skips are listed apart, timeouts and a detector that went away
-included. The figures are therefore conditional on both runs answering in time.
+included. The figures therefore cover the cases neither run timed out on; a
+case skipped for another reason stays paired and counts as a miss.
 The floors do set the model's decoding threshold (the lowest floor minus 0.1),
 so they could in principle change how long a request takes. At the floors
 measured so far they did not: the two recorded baselines, at the old and the
