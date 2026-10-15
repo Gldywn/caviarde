@@ -12,12 +12,13 @@ export const CONTAINER_PORT = 5002;
 export const PATCH_TARGET =
   "/opt/venv/lib/python3.14/site-packages/detector/gliner_layer.py";
 
-/** Tuned for recall: the upstream defaults are set for precision and drop most
- * French names. */
+/** The values compose.yaml gives the development detector, measured with the
+ * evaluation harness: one step lower on any label masks identifiers or plain
+ * words. See docs/limitations.md. */
 export const FLOORS: Readonly<Record<string, string>> = {
-  GLINER_FLOOR_PERSON: "0.95",
-  GLINER_FLOOR_LOCATION: "0.70",
-  GLINER_FLOOR_ADDRESS: "0.70",
+  GLINER_FLOOR_PERSON: "0.80",
+  GLINER_FLOOR_LOCATION: "0.60",
+  GLINER_FLOOR_ADDRESS: "0.30",
   GLINER_FLOOR_ORGANIZATION: "0.50",
 };
 

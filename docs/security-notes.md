@@ -75,9 +75,9 @@ precision and drop most French names. For a masking tool the asymmetry runs the
 other way: a false positive masks a harmless word, a false negative leaks a real
 name.
 
-The values in use are 0.95 for person, 0.70 for location and address, and 0.50
-for organisation. They were chosen from a small sample of synthetic French text,
-not from a benchmark. See `limitations.md`.
+The values in use are 0.80 for person, 0.60 for location, 0.30 for address and
+0.50 for organisation. They were measured with the evaluation harness on three
+public synthetic corpora, not on real clipboard text. See `limitations.md`.
 
 ## Checking for upstream drift
 
