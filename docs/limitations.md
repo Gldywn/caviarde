@@ -86,28 +86,42 @@ separator. Whatever the `phoneRegions` preference says, it recognises:
 - French national numbers written as five pairs of digits (`01 23 45 67 89`);
 - international `+` numbers, including a bracketed trunk zero or area code
   after the country code (`+33 (0)1 23 45 67 89`, `+1 (234) 567-8901`);
-- national numbers with a bracketed area code, as North America and Brazil
-  write them (`(234) 567-8901`, `(11) 91234-5678`);
+- national numbers with a bracketed area code, as North America writes them
+  and as Brazil writes a mobile number (`(234) 567-8901`, `(11) 91234-5678`);
 - national numbers of ten or eleven digits written as a trunk zero and an area
   code, then a hyphen or a slash (`020-1234567`, `030/12345678`), provided
   neither the area code nor the subscriber number starts with a zero, which
   keeps zero-padded references such as `0042-1234567` out.
 
-In the French and international layouts, groups may be separated by nothing,
-an ordinary space, a non-breaking space or a narrow non-breaking space
-(U+202F), as French typography writes them, a dot or a hyphen. A leading `+`
-makes the whole run a phone number whatever its digits would otherwise pass:
-`+34 123 456 782` is masked as one phone number, not as a country code left
-visible before a spaced SIREN.
+Groups may be separated by nothing, an ordinary space, a non-breaking space or
+a narrow non-breaking space (U+202F), as French typography writes them, and in
+the French and international layouts also by a dot or a hyphen. A digit run
+followed by a letter, such as `020-1234567A`, is a reference and is left alone.
+
+A leading `+` makes the whole run a phone number whatever its digits would
+otherwise pass: `+34 123 456 782` is masked as one phone number, not as a
+country code left visible before a spaced SIREN. A `+33` number stops after its
+nine digits, so a SIREN or a street number written after it on the same line
+keeps its own rule. After any other country code the rule cannot know the
+national length: a number written right after the phone, separated by a single
+space, can lose its first group to it. A signed amount, recognised by a decimal
+part or a currency or percent sign after its digits (`+1 234 567,89`,
+`+1 234 567 €`), is left alone; one followed by a currency code alone,
+`+1 234 567 EUR`, is still read as a phone number.
 
 Everything else relies on the formats the detector supports, or is missed:
 
 - a bare run of digits (`2345678901`), which is as likely an order number or an
   epoch second;
 - a North American number written with hyphens or dots alone
-  (`234-567-8901`), a layout internal references also use;
+  (`234-567-8901`), or with a space after the area code (`(234) 567 8901`);
+  internal references also use the first layout;
+- a Brazilian landline (`(21) 2345-6789`), whose four digits and four are
+  written like a year or page range (`(12) 2019-2020`);
 - a trunk zero followed by two hyphens (`010-1234-5678`, `081-234-5678`), a
-  layout dated references such as `01-2024-0001` also use;
+  layout dated references such as `012-2024-0001` also use;
+- a country code in brackets or written with `00` (`(+33) 6 12 34 56 78`,
+  `0033 6 12 34 56 78`);
 - a number partly hidden already, such as `06 ** ** 56 78`, whose visible
   digits stay visible;
 - other groupings with no anchor (`0 800 123 456`, `612 34 56 78`);
@@ -115,11 +129,12 @@ Everything else relies on the formats the detector supports, or is missed:
   written after the number (`ext. 1234`), whose number is masked and whose
   extension is not.
 
-A national number written as three groups of three digits (`612 345 678`) has
-the shape of a spaced SIREN: it is masked as a SIREN when its digits pass Luhn,
-and left to the detector otherwise. Where `+` separates fields, as in EDI
-messages, a number right after it is read as a phone number, a card number
-included.
+The French layout reads a ten-digit reference written as a zero and pairs,
+such as `03-2024-0042`, as a phone number. A national number written as three
+groups of three digits (`612 345 678`) has the shape of a spaced SIREN: it is
+masked as a SIREN when its digits pass Luhn, and left to the detector
+otherwise. Where `+` separates fields, as in EDI messages, a number right after
+it is read as a phone number, a card number included.
 
 `phoneRegions` supplies the detector's region hints for national
 numbers. Those hints have no effect without a successful detector response, and

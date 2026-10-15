@@ -212,7 +212,9 @@ describe("phone numbers", () => {
 
   it("leaves zero-padded and short hyphenated references alone", () => {
     expect(
-      found("factuur 0042-1234567, ref 020-0123456, lot 012-345678"),
+      found(
+        "factuur 0042-1234567, ref 020-0123456, lot 012-345678, dossier 012-2024-0001",
+      ),
     ).toEqual([]);
   });
 
