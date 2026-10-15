@@ -87,7 +87,8 @@ separator. Whatever the `phoneRegions` preference says, it recognises:
 - international `+` numbers, including a bracketed trunk zero or area code
   after the country code (`+33 (0)1 23 45 67 89`, `+1 (234) 567-8901`);
 - national numbers with a bracketed area code, as North America writes them
-  and as Brazil writes a mobile number (`(234) 567-8901`, `(11) 91234-5678`);
+  and as Brazil writes a mobile number (`(234) 567-8901`, `(234) 567.8901`,
+  `(11) 91234-5678`);
 - national numbers of ten or eleven digits written as a trunk zero and an area
   code, then a hyphen or a slash (`020-1234567`, `030/12345678`), provided
   neither the area code nor the subscriber number starts with a zero, which
@@ -95,19 +96,28 @@ separator. Whatever the `phoneRegions` preference says, it recognises:
 
 Groups may be separated by nothing, an ordinary space, a non-breaking space or
 a narrow non-breaking space (U+202F), as French typography writes them, and in
-the French and international layouts also by a dot or a hyphen. A digit run
-followed by a letter, such as `020-1234567A`, is a reference and is left alone.
+the French and international layouts also by a dot or a hyphen. In the
+bracketed and trunk-zero layouts, a digit run followed by a letter, such as
+`020-1234567A` or `020-1234567É`, is a reference and is left alone, except for
+the `x` of a glued extension: in `020-1234567x12` the number is masked and the
+extension is not. The French and international layouts do not make that
+distinction: `+44 20 1234 5678A` is masked up to the letter.
 
 A leading `+` makes the whole run a phone number whatever its digits would
 otherwise pass: `+34 123 456 782` is masked as one phone number, not as a
 country code left visible before a spaced SIREN. A `+33` number stops after its
-nine digits, so a SIREN or a street number written after it on the same line
-keeps its own rule. After any other country code the rule cannot know the
-national length: a number written right after the phone, separated by a single
-space, can lose its first group to it. A signed amount, recognised by a decimal
-part or a currency or percent sign after its digits (`+1 234 567,89`,
-`+1 234 567 €`), is left alone; one followed by a currency code alone,
-`+1 234 567 EUR`, is still read as a phone number.
+nine digits, its trunk zero aside, so a SIREN or a street number written after
+it on the same line keeps its own rule. After any other country code the rule
+cannot know the national length: a number written right after the phone,
+separated by a single space, can lose its first group to it.
+
+A signed amount is left alone when the whole run reads as one: a sign, one to
+three digits and groups of exactly three, with a decimal part of one or two
+digits or a `€`, `$`, `£` or `%` sign right after (`+1 234 567,89`,
+`+1 234 567 890 €`). A phone grouped otherwise keeps its mask whatever follows
+it, as in a CSV row (`+44 20 1234 5678,42`). An amount followed by another
+currency sign or a currency code, `+1 234 567 EUR`, is still read as a phone
+number.
 
 Everything else relies on the formats the detector supports, or is missed:
 
