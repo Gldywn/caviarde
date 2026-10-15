@@ -143,6 +143,21 @@ describe("phone numbers", () => {
     ]);
   });
 
+  it("stops a French international number after its nine digits", () => {
+    expect(isSirenValid("123456782")).toBe(true);
+    expect(found("+33 1 23 45 67 89 123 456 782")).toEqual([
+      ["PHONE", "+33 1 23 45 67 89"],
+      ["SIREN", "123 456 782"],
+    ]);
+    expect(found("+33 1 23 45 67 89 123 456 782 00010")).toEqual([
+      ["PHONE", "+33 1 23 45 67 89"],
+      ["SIRET", "123 456 782 00010"],
+    ]);
+    expect(found("+33 6 12 34 56 78 12 rue de la Paix")).toEqual([
+      ["PHONE", "+33 6 12 34 56 78"],
+    ]);
+  });
+
   it("catches a bracketed trunk zero after the country code", () => {
     expect(found("+44 (0)20 1234 5678 ou +33 (0)1 23 45 67 89")).toEqual([
       ["PHONE", "+44 (0)20 1234 5678"],

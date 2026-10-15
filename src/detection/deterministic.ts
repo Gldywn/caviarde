@@ -1,5 +1,10 @@
 import { type Finder, simple } from "./finder";
-import { findFrenchPhone, findSiren, findSiret } from "./fr";
+import {
+  findFrenchInternationalPhone,
+  findFrenchPhone,
+  findSiren,
+  findSiret,
+} from "./fr";
 import type { Span } from "./types";
 import { isCardNumber } from "./validators/card";
 import { isIbanValid } from "./validators/iban";
@@ -94,6 +99,7 @@ const FINDERS: readonly Finder[] = [
   simple("IP", IPV6_CANDIDATE, isMaskableIpv6),
   simple("IP", IPV4, isMaskableIpv4),
   findIban,
+  findFrenchInternationalPhone,
   simple("PHONE", PHONE_INTERNATIONAL),
   findSiret,
   findSiren,

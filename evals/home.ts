@@ -471,6 +471,13 @@ const HOME: readonly HomeCase[] = [
       "Bel [[PHONE:020-1234567]] of [[PHONE:030/12345678]], factuur {{0042-1234567}}",
   },
   {
+    id: "phone-french-then-siren",
+    language: "fr",
+    layer: "local",
+    note: "a French international number, then a spaced SIREN on the same line",
+    markup: "standard [[PHONE:+33 1 23 45 67 89]] [[SIREN:123 456 782]]",
+  },
+  {
     id: "phone-international-siren-tail",
     language: "es",
     layer: "local",
