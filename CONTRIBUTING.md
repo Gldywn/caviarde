@@ -98,7 +98,9 @@ gets a module of the same shape. A new detector touches these places:
    finders can match the same text, the one whose label should win goes first.
    A business identifier that is Luhn-valid comes before `CARD`, or one
    starting with an issuer prefix is reported as a card; SIRET comes before
-   SIREN because a spaced SIRET starts with a SIREN.
+   SIREN because a spaced SIRET starts with a SIREN; an international phone
+   number comes before all three, because the digits after its `+` can be a
+   spaced SIREN or pass the card check.
 4. **Entity type.** The type goes in `ENTITY_TYPES` in
    `src/detection/types.ts`. Its name is also the placeholder prefix.
 5. **HUD wording.** `NOUNS` in `src/summary.ts` takes the singular and plural,

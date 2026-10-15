@@ -79,16 +79,49 @@ spaced form `RCS Lyon B 123 456 782` is masked regardless.
 
 ## Phone numbers
 
-The deterministic layer recognises, whatever the `phoneRegions` preference says,
-French national numbers written as five pairs of digits (`01 23 45 67 89`) and
-international `+` numbers, with nothing or an ordinary space, dot or hyphen as
-separator.
+A phone number has no checksum, so the deterministic layer reads only layouts
+with a structural anchor: a `+`, brackets, or a trunk zero with a fixed
+separator. Whatever the `phoneRegions` preference says, it recognises:
 
-Other layouts rely on the formats the detector supports: another grouping
-(`0 800 123 456`), groups separated by a non-breaking space, as French
-typography writes them, or a trunk zero in brackets (`+33 (0)1 23 45 67 89`).
-Groups separated by a narrow non-breaking space (U+202F) are missed by both
-layers. `phoneRegions` supplies the detector's region hints for national
+- French national numbers written as five pairs of digits (`01 23 45 67 89`);
+- international `+` numbers, including a bracketed trunk zero or area code
+  after the country code (`+33 (0)1 23 45 67 89`, `+1 (234) 567-8901`);
+- national numbers with a bracketed area code, as North America and Brazil
+  write them (`(234) 567-8901`, `(11) 91234-5678`);
+- national numbers of ten or eleven digits written as a trunk zero and an area
+  code, then a hyphen or a slash (`020-1234567`, `030/12345678`), provided
+  neither the area code nor the subscriber number starts with a zero, which
+  keeps zero-padded references such as `0042-1234567` out.
+
+In the French and international layouts, groups may be separated by nothing,
+an ordinary space, a non-breaking space or a narrow non-breaking space
+(U+202F), as French typography writes them, a dot or a hyphen. A leading `+`
+makes the whole run a phone number whatever its digits would otherwise pass:
+`+34 123 456 782` is masked as one phone number, not as a country code left
+visible before a spaced SIREN.
+
+Everything else relies on the formats the detector supports, or is missed:
+
+- a bare run of digits (`2345678901`), which is as likely an order number or an
+  epoch second;
+- a North American number written with hyphens or dots alone
+  (`234-567-8901`), a layout internal references also use;
+- a trunk zero followed by two hyphens (`010-1234-5678`, `081-234-5678`), a
+  layout dated references such as `01-2024-0001` also use;
+- a number partly hidden already, such as `06 ** ** 56 78`, whose visible
+  digits stay visible;
+- other groupings with no anchor (`0 800 123 456`, `612 34 56 78`);
+- digits other than ASCII ones, such as Arabic-Indic digits, and an extension
+  written after the number (`ext. 1234`), whose number is masked and whose
+  extension is not.
+
+A national number written as three groups of three digits (`612 345 678`) has
+the shape of a spaced SIREN: it is masked as a SIREN when its digits pass Luhn,
+and left to the detector otherwise. Where `+` separates fields, as in EDI
+messages, a number right after it is read as a phone number, a card number
+included.
+
+`phoneRegions` supplies the detector's region hints for national
 numbers. Those hints have no effect without a successful detector response, and
 no request is made when the text is over the semantic size limit or when all
 three semantic preferences are off.
@@ -101,8 +134,12 @@ as `987654321` into a phone number, Portugal one such as `600123456`, the United
 States and Canada an eleven-digit number starting with 1, Brazil a ten-digit
 one, Italy a ten-digit one starting with 32 to 39, and Austria an eight-digit
 one starting with 0. Those countries are left out of the default for that
-reason. Their numbers are still masked in international `+` form, and adding
-one of them to the list trades that identifier risk for its national format.
+reason. Their numbers are still masked in international `+` form, North
+American and Brazilian ones also with a bracketed area code, and adding one of
+them to the list trades that identifier risk for its national format. The
+default list is not free of it either: with it, the detector reads a hyphenated
+reference such as `020-0123456` as a phone number, which the deterministic layer
+leaves alone because its subscriber part starts with a zero.
 
 ## Confidence thresholds are a tuning choice
 
