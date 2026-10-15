@@ -466,9 +466,9 @@ const HOME: readonly HomeCase[] = [
     id: "phone-trunk-zero-hyphen",
     language: "nl",
     layer: "local",
-    note: "trunk zero and area code before a hyphen or a slash, next to a zero-padded reference",
+    note: "trunk zero and area code before a hyphen or a slash, next to references that are not phones",
     markup:
-      "Bel [[PHONE:020-1234567]] of [[PHONE:030/12345678]], factuur {{0042-1234567}}",
+      "Bel [[PHONE:020-1234567]] of [[PHONE:030/12345678]], factuur {{0042-1234567}}, order {{020-1234567A}}",
   },
   {
     id: "phone-french-then-siren",

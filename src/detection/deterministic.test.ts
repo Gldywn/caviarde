@@ -216,6 +216,19 @@ describe("phone numbers", () => {
     ).toEqual([]);
   });
 
+  it("leaves a reference with a letter after its digits alone", () => {
+    expect(found("order_id=020-1234567A, ref (234) 567-8901B")).toEqual([]);
+  });
+
+  it("reads typographic spaces in the national layouts", () => {
+    const area = "(234)\u00a0567-8901";
+    const trunk = "020-123\u202f4567";
+    expect(found(`call ${area} or ${trunk}`)).toEqual([
+      ["PHONE", area],
+      ["PHONE", trunk],
+    ]);
+  });
+
   it("labels an international number whose digits pass the card check as a phone", () => {
     expect(isCardNumber("55 11 91234-5676")).toBe(true);
     expect(found("ligar +55 11 91234-5676")).toEqual([

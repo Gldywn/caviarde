@@ -54,12 +54,12 @@ const PHONE_INTERNATIONAL =
  * and the fixed grouping are the anchor: a bare digit run is as likely an order number, and a
  * Brazilian landline, four digits and four, is written like a year or page range. */
 const PHONE_AREA_CODE =
-  /(?<!\w)\((?:\d{3}\) ?\d{3}[-.]|\d{2}\) ?9\d{4}-)\d{4}(?!\d)/g;
+  /(?<!\w)\((?:\d{3}\)[ \u00a0\u202f]?\d{3}[-.]|\d{2}\)[ \u00a0\u202f]?9\d{4}-)\d{4}(?!\w)/g;
 
 /** `020-1234567`, `030/12345678`. A zero-padded reference has a second zero, and no
  * subscriber number starts with one, so neither position may hold a zero. */
 const PHONE_TRUNK_ZERO =
-  /(?<![\w/.-])0[1-9]\d{0,3}[-/][1-9]\d{2} ?\d{3,5}(?![\d/-])/g;
+  /(?<![\w/.-])0[1-9]\d{0,3}[-/][1-9]\d{2}[ \u00a0\u202f]?\d{3,5}(?![\w/-])/g;
 
 function hasNationalLength(match: string): boolean {
   const digits = match.replace(/\D/g, "").length;
