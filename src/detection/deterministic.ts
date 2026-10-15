@@ -1,5 +1,10 @@
 import { type Finder, simple } from "./finder";
-import { findFrenchPhone, findSiren, findSiret } from "./fr";
+import {
+  findFrenchInternationalPhone,
+  findFrenchPhone,
+  findSiren,
+  findSiret,
+} from "./fr";
 import type { Span } from "./types";
 import { isCardNumber } from "./validators/card";
 import { isIbanValid } from "./validators/iban";
@@ -40,7 +45,41 @@ const IBAN_CANDIDATE =
 
 const CARD_CANDIDATE = /(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)/g;
 
-const PHONE_INTERNATIONAL = /(?<![\d+])\+\d{1,3}(?:[ .-]?\d){6,14}(?!\d)/g;
+/** The bracketed group is a trunk zero, `+44 (0)20`, or an area code, `+1 (234)`. */
+const PHONE_INTERNATIONAL =
+  /(?<![\d+])\+\d{1,3}(?:[ .\u00a0\u202f-]?\(\d{1,4}\))?(?:[ .\u00a0\u202f-]?\d){6,14}(?!\d)/g;
+
+const SIGNED_AMOUNT =
+  /\+\d{1,3}(?:[ .\u00a0\u202f]\d{3}){1,2}(?:[.,]\d{1,2}(?!\d)|[ \u00a0\u202f]?[\u20ac$\u00a3%])/y;
+
+/** `+1 234 567,89 EUR`: a sign, one or two groups of three and a decimal part or a currency sign
+ * make an amount; a third group is a phone, `+34 612 345 678`. Judged on the whole run, so no
+ * shorter phone is tried in its place. */
+function withoutAmounts(find: Finder): Finder {
+  return (text) =>
+    find(text).filter(({ start, end }) => {
+      SIGNED_AMOUNT.lastIndex = start;
+      const amount = SIGNED_AMOUNT.exec(text);
+      return amount === null || amount[0].length < end - start;
+    });
+}
+
+/** `(234) 567-8901` in North America, `(11) 91234-5678` for a Brazilian mobile. The brackets
+ * and the fixed grouping are the anchor: a bare digit run is as likely an order number, and a
+ * Brazilian landline, four digits and four, is written like a year or page range. A letter
+ * after the digits makes a reference, except the `x` of a glued extension, `x204`. */
+const PHONE_AREA_CODE =
+  /(?<![\p{L}\p{N}_])\((?:\d{3}\)[ \u00a0\u202f]?\d{3}[-.]|\d{2}\)[ \u00a0\u202f]?9\d{4}-)\d{4}(?:(?=[xX]\d)|(?![\p{L}\p{N}_]))/gu;
+
+/** `020-1234567`, `030/12345678`. A zero-padded reference has a second zero, and no
+ * subscriber number starts with one, so neither position may hold a zero. */
+const PHONE_TRUNK_ZERO =
+  /(?<![\p{L}\p{N}_/.-])0[1-9]\d{0,3}[-/][1-9]\d{2}[ \u00a0\u202f]?\d{3,5}(?:(?=[xX]\d)|(?![\p{L}\p{N}_/-]))/gu;
+
+function hasNationalLength(match: string): boolean {
+  const digits = match.replace(/\D/g, "").length;
+  return digits === 10 || digits === 11;
+}
 
 /** The candidate can run past the IBAN into prose, so trailing tokens are trimmed
  * off until what remains validates. */
@@ -66,8 +105,8 @@ const findIban: Finder = (text) => {
   return found;
 };
 
-/** Priority order: a later finder never claims a range an earlier one took. A
- * SIRET can pass the card check and a spaced one starts with a SIREN, so it leads both. */
+/** Priority order: a later finder never claims a range an earlier one took. A leading +
+ * is a phone whatever its digits pass; a SIRET passes the card check and starts with a SIREN. */
 const FINDERS: readonly Finder[] = [
   simple("PRIVATE_KEY", PEM_BLOCK),
   simple("JWT", JWT),
@@ -77,11 +116,14 @@ const FINDERS: readonly Finder[] = [
   simple("IP", IPV6_CANDIDATE, isMaskableIpv6),
   simple("IP", IPV4, isMaskableIpv4),
   findIban,
+  withoutAmounts(findFrenchInternationalPhone),
+  withoutAmounts(simple("PHONE", PHONE_INTERNATIONAL)),
   findSiret,
   findSiren,
   simple("CARD", CARD_CANDIDATE, isCardNumber),
-  simple("PHONE", PHONE_INTERNATIONAL),
   findFrenchPhone,
+  simple("PHONE", PHONE_AREA_CODE),
+  simple("PHONE", PHONE_TRUNK_ZERO, hasNationalLength),
 ];
 
 export function detectDeterministic(text: string): Span[] {

@@ -122,8 +122,9 @@ detector answers, so they stay green without one.
 
 ## What it catches
 
-**Patterns, always, with no network and no dependency.** Email addresses, French
-and international phone numbers, IPv4 and IPv6, IBANs validated with mod-97,
+**Patterns, always, with no network and no dependency.** Email addresses, phone
+numbers in French, international and common national layouts, IPv4 and IPv6,
+IBANs validated with mod-97,
 credit cards validated with Luhn and an issuer prefix, SIRET validated with Luhn,
 SIREN company numbers, API keys and
 access tokens, JWTs, PEM private keys, and names written as `@mentions`. Every
@@ -176,7 +177,7 @@ glossed over.
 | Detector URL | `http://127.0.0.1:5002` | Where the semantic detector lives. Set up Detector only manages this loopback form |
 | Detector Timeout | `3500` ms | Past this, fall back to patterns alone |
 | Auth Token | empty | Bearer token, for a detector that is not local |
-| Phone Regions | `FR,GB,DE,NL,BE,CH,IE` | Countries whose national phone formats the detector reads. Without the detector, only common French and international `+` layouts are masked. Adding ES, PT, IT, AT, US, CA or BR also masks some numeric ids |
+| Phone Regions | `FR,GB,DE,NL,BE,CH,IE` | Countries whose national phone formats the detector reads. Without the detector, only French, international `+` and a few national layouts with a bracketed or hyphenated area code are masked. Adding ES, PT, IT, AT, US, CA or BR also masks some numeric ids |
 | Mask person names | on | Needs the detector, except `@mentions` |
 | Mask locations and addresses | on | Needs the detector |
 | Mask company and organisation names | on | Needs the detector and its patch |

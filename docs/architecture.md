@@ -65,7 +65,7 @@ src/
   detection/
     types.ts                 EntityType, Span
     finder.ts                Finder type, and simple() for a regex finder
-    fr.ts                    French finders: SIRET, SIREN, national phone numbers
+    fr.ts                    French finders: SIRET, SIREN, French phone numbers
     deterministic.ts         regex and checksum layer, including @mentions
     semantic.ts              detector results revalidated and bounded into spans
     coreference.ts           first-name propagation
@@ -112,10 +112,16 @@ one-file fix.
 
 ## Detection
 
-**Deterministic**, always, no network: emails, French and international phone
-numbers, IPv4 and IPv6, IBAN (mod-97), credit cards (Luhn plus an issuer
+**Deterministic**, always, no network: emails, phone numbers in the layouts that
+carry an anchor (French pairs, a leading `+`, a bracketed area code, a trunk zero
+before a hyphen or slash), IPv4 and IPv6, IBAN (mod-97), credit cards (Luhn plus an issuer
 prefix), SIRET (Luhn), SIREN behind a keyword guard, API keys, JWTs, PEM private keys, and `@mentions` as
 person names.
+
+Finders run in a fixed priority order, and the first to claim a range keeps it.
+An international phone number comes before SIRET, SIREN and cards, because the
+digits after its `+` can form a spaced SIREN or pass the card check; SIRET comes
+before SIREN and cards for the same reason.
 
 **Semantic**, over HTTP, optional: people, places and street addresses, plus
 company names when the detector runs the patch described in `detector-patch.md`.

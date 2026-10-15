@@ -425,6 +425,81 @@ const HOME: readonly HomeCase[] = [
     markup: "call [[PHONE:+44 20 1234 5678]] or [[PHONE:+49 30 12345678]]",
   },
   {
+    id: "phone-typographic-spaces",
+    language: "fr",
+    layer: "local",
+    note: "groups separated by a non-breaking space and by a narrow non-breaking space",
+    markup:
+      "tel [[PHONE:06\u00a012\u00a034\u00a056\u00a078]] ou [[PHONE:+33\u202f1\u202f23\u202f45\u202f67\u202f89]]",
+  },
+  {
+    id: "phone-bracketed-trunk-zero",
+    language: "en",
+    layer: "local",
+    note: "trunk zero in brackets after the country code",
+    markup:
+      "call [[PHONE:+44 (0)20 1234 5678]] or [[PHONE:+33 (0)1 23 45 67 89]]",
+  },
+  {
+    id: "phone-bracketed-area-code",
+    language: "en",
+    layer: "local",
+    note: "area code in brackets after the country code",
+    markup: "call [[PHONE:+1 (234) 567-8901]] after lunch",
+  },
+  {
+    id: "phone-national-bracketed-area-code",
+    language: "en",
+    layer: "local",
+    note: "national number with its area code in brackets",
+    markup: "call [[PHONE:(234) 567-8901]] about order {{2345678901}}",
+  },
+  {
+    id: "phone-national-bracketed-area-code-br",
+    language: "pt",
+    layer: "local",
+    note: "Brazilian mobile number with a two-digit area code in brackets, next to a bracketed count before a year range",
+    markup:
+      "ligar para [[PHONE:(11) 91234-5678]], temporada {{(12) 2019-2020}}",
+  },
+  {
+    id: "phone-trunk-zero-hyphen",
+    language: "nl",
+    layer: "local",
+    note: "trunk zero and area code before a hyphen or a slash, next to references that are not phones",
+    markup:
+      "Bel [[PHONE:020-1234567]] of [[PHONE:030/12345678]], factuur {{0042-1234567}}, order {{020-1234567A}}",
+  },
+  {
+    id: "phone-csv-and-glued-extension",
+    language: "en",
+    layer: "local",
+    note: "a whole phone before a comma and digits in a CSV row, and a number before a glued extension",
+    markup:
+      "contact,[[PHONE:+44 20 1234 5678]],42\ncontact,[[PHONE:+442012345678]],10115\ncontacto,[[PHONE:+34 612 345 679]],42\ndesk [[PHONE:(234)567-8901]]x204",
+  },
+  {
+    id: "phone-french-then-siren",
+    language: "fr",
+    layer: "local",
+    note: "a French international number, then a spaced SIREN on the same line",
+    markup: "standard [[PHONE:+33 1 23 45 67 89]] [[SIREN:123 456 782]]",
+  },
+  {
+    id: "phone-international-siren-tail",
+    language: "es",
+    layer: "local",
+    note: "international number whose last nine digits are a valid spaced SIREN",
+    markup: "llamar al [[PHONE:+34 123 456 782]] por la tarde",
+  },
+  {
+    id: "phone-international-card-digits",
+    language: "pt",
+    layer: "local",
+    note: "international number whose digits pass the card check",
+    markup: "ligar para [[PHONE:+55 11 91234-5676]] amanhã",
+  },
+  {
     id: "iban-spaced",
     language: "fr",
     layer: "local",
@@ -484,6 +559,14 @@ const HOME: readonly HomeCase[] = [
     note: "amounts, dates and times that resemble identifiers",
     markup:
       "Montant 1 234,56 EUR le 14/10/2026 a 10:30:00, delai 48 h, version 3.2.",
+  },
+  {
+    id: "clean-signed-amounts",
+    language: "fr",
+    layer: "local",
+    note: "signed amounts typeset with narrow and non-breaking spaces, which a + would make a phone",
+    markup:
+      "Ecart sur le mois : +1\u202f234\u202f567 €, puis +12\u00a0345\u00a0678,50 €.",
   },
 
   // Offsets past astral characters, and the size cap of the semantic layer.

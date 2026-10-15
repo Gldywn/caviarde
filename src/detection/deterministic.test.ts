@@ -4,6 +4,7 @@ import { detectDeterministic } from "./deterministic";
 import { mergeSpans } from "./merge";
 import type { EntityType } from "./types";
 import { isCardNumber } from "./validators/card";
+import { isSirenValid } from "./validators/french-business";
 
 function found(text: string): Array<[EntityType, string]> {
   return detectDeterministic(text).map((s) => [
@@ -124,6 +125,151 @@ describe("phone numbers", () => {
 
   it("catches a dotted French number", () => {
     expect(found("01.23.45.67.89")).toEqual([["PHONE", "01.23.45.67.89"]]);
+  });
+
+  it("reads non-breaking and narrow non-breaking spaces as separators", () => {
+    const french = ["06", "12", "34", "56", "78"].join("\u00a0");
+    const international = ["+33", "1", "23", "45", "67", "89"].join("\u202f");
+    expect(found(`tel ${french} ou ${international}`)).toEqual([
+      ["PHONE", french],
+      ["PHONE", international],
+    ]);
+  });
+
+  it("keeps a SIREN-shaped tail inside an international number", () => {
+    expect(isSirenValid("123456782")).toBe(true);
+    expect(found("llamar al +34 123 456 782")).toEqual([
+      ["PHONE", "+34 123 456 782"],
+    ]);
+  });
+
+  it("stops a French international number after its nine digits", () => {
+    expect(isSirenValid("123456782")).toBe(true);
+    expect(found("+33 1 23 45 67 89 123 456 782")).toEqual([
+      ["PHONE", "+33 1 23 45 67 89"],
+      ["SIREN", "123 456 782"],
+    ]);
+    expect(found("+33 1 23 45 67 89 123 456 782 00010")).toEqual([
+      ["PHONE", "+33 1 23 45 67 89"],
+      ["SIRET", "123 456 782 00010"],
+    ]);
+    expect(found("+33 6 12 34 56 78 12 rue de la Paix")).toEqual([
+      ["PHONE", "+33 6 12 34 56 78"],
+    ]);
+    expect(found("+33 06 12 34 56 78 123 456 782")).toEqual([
+      ["PHONE", "+33 06 12 34 56 78"],
+      ["SIREN", "123 456 782"],
+    ]);
+    expect(found("+33 12 34 56 78 901")).toEqual([
+      ["PHONE", "+33 12 34 56 78 901"],
+    ]);
+  });
+
+  it("leaves signed amounts alone, typographic spaces included", () => {
+    const narrow = ["+1", "234", "567"].join("\u202f");
+    const nbsp = ["+12", "345", "678,50"].join("\u00a0");
+    expect(
+      found(`ecart ${narrow} €, ${nbsp} €, +1 234 567,89 EUR, +7 654 321 %`),
+    ).toEqual([]);
+    expect(
+      found("+123 456 789,12 €, +1 234 567.89, solde +12 345 678 €"),
+    ).toEqual([]);
+  });
+
+  it("masks a whole phone followed by a comma and digits, as in a CSV row", () => {
+    expect(
+      found(
+        "Emily Clarke,+44 20 1234 5678,42\n+442012345678,10115\nLucía Fernández,+34 612 345 679,42,Madrid\n+34 612 345 679 €",
+      ),
+    ).toEqual([
+      ["PHONE", "+44 20 1234 5678"],
+      ["PHONE", "+442012345678"],
+      ["PHONE", "+34 612 345 679"],
+      ["PHONE", "+34 612 345 679"],
+    ]);
+  });
+
+  it("catches a bracketed trunk zero after the country code", () => {
+    expect(found("+44 (0)20 1234 5678 ou +33 (0)1 23 45 67 89")).toEqual([
+      ["PHONE", "+44 (0)20 1234 5678"],
+      ["PHONE", "+33 (0)1 23 45 67 89"],
+    ]);
+  });
+
+  it("catches a bracketed area code after the country code", () => {
+    expect(found("call +1 (234) 567-8901 today")).toEqual([
+      ["PHONE", "+1 (234) 567-8901"],
+    ]);
+  });
+
+  it("catches a national number with a bracketed area code", () => {
+    expect(found("call (234) 567-8901 or (234) 567.8902")).toEqual([
+      ["PHONE", "(234) 567-8901"],
+      ["PHONE", "(234) 567.8902"],
+    ]);
+  });
+
+  it("catches a Brazilian mobile number with a two-digit bracketed area code", () => {
+    expect(found("ligar (11) 91234-5678")).toEqual([
+      ["PHONE", "(11) 91234-5678"],
+    ]);
+  });
+
+  it("leaves bracketed counts before year and page ranges alone", () => {
+    expect(
+      found(
+        "Saison (12) 2019-2020, dossier (15) 2024-0042, J. 275 (12) 8765-8771",
+      ),
+    ).toEqual([]);
+  });
+
+  it("catches a trunk zero and area code before a hyphen or a slash", () => {
+    expect(found("bel 020-1234567 of 020-123 4567, Tel. 030/12345678")).toEqual(
+      [
+        ["PHONE", "020-1234567"],
+        ["PHONE", "020-123 4567"],
+        ["PHONE", "030/12345678"],
+      ],
+    );
+  });
+
+  it("leaves zero-padded and short hyphenated references alone", () => {
+    expect(
+      found(
+        "factuur 0042-1234567, ref 020-0123456, lot 012-345678, dossier 012-2024-0001",
+      ),
+    ).toEqual([]);
+  });
+
+  it("leaves a reference with a letter after its digits alone", () => {
+    expect(
+      found(
+        "order_id=020-1234567A, ref (234) 567-8901B, lot 020-1234567É, ref (234) 567-8901é",
+      ),
+    ).toEqual([]);
+  });
+
+  it("masks the number before a glued extension", () => {
+    expect(found("call (234)567-8901x204 or 020-1234567x12")).toEqual([
+      ["PHONE", "(234)567-8901"],
+      ["PHONE", "020-1234567"],
+    ]);
+  });
+
+  it("reads typographic spaces in the national layouts", () => {
+    const area = "(234)\u00a0567-8901";
+    const trunk = "020-123\u202f4567";
+    expect(found(`call ${area} or ${trunk}`)).toEqual([
+      ["PHONE", area],
+      ["PHONE", trunk],
+    ]);
+  });
+
+  it("labels an international number whose digits pass the card check as a phone", () => {
+    expect(isCardNumber("55 11 91234-5676")).toBe(true);
+    expect(found("ligar +55 11 91234-5676")).toEqual([
+      ["PHONE", "+55 11 91234-5676"],
+    ]);
   });
 });
 
