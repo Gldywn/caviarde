@@ -114,9 +114,9 @@ three public synthetic corpora and the home dataset, one label and one step at
 a time. A step was kept only when the leak fell on at least one corpus with a
 95 % paired bootstrap interval excluding zero, no corpus got worse, over-masking
 stayed within one point of the previous baseline, and nothing the masked text
-needs was newly lost against the previous floors: identifiers, texts with no
-personal data, and the product names, team names and technical strings of a
-set of invented tickets.
+needs was newly lost against the previous floors: identifiers, the home
+dataset's texts with no personal data, and the product names, team names and
+technical strings of a set of invented tickets.
 
 Against the previous floors (0.95, 0.70, 0.70, 0.50), the share of sensitive
 characters left visible fell from 22.3 % to 17.4 % on REDACT, from 21.4 % to
@@ -154,8 +154,11 @@ honorifics written as names ("Customer", "Agent", "Herr") are sometimes masked
 as persons, and a name that starts with an honorific ("Herr Jonas Becker") makes
 the honorific, not the first name, stand for the person elsewhere in the text.
 The word "address" itself ("adresse postale", "Wohnort") is sometimes masked as
-a place, some of it already under the previous floors, and so, in the corpora,
-are a locale code, two field names and a terminal tag that names a city.
+a place, some of it already under the previous floors. In the corpora, the
+current floors also newly mask technical strings as places, among them a locale
+code, field names and labels, EDI segment tags together with the address they
+carry, a template marker and a terminal tag that names a city. On the invented
+tickets, such strings stay unmasked.
 Organisations, unchanged at 0.50, already mask some product and team names
 named in a ticket. On the other side, REDACT still leaves a third of its
 location characters visible, and Gretel a quarter of its person characters. All

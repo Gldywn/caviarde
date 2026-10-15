@@ -164,14 +164,15 @@ pnpm evals compare <candidate run directory> <reference run directory>
 ```
 
 A case that timed out in either run is left out of both, and each run's
-timeouts are counted apart. The figures are therefore conditional on both runs
-answering. For the confidence floors that selection is neutral: the model runs
-the same pass whatever the floors, and the two recorded baselines, at the old
-and the current floors, show the same REDACT latency (median 669 and 671 ms,
-p95 2,986 and 2,954 ms), so a timeout in one run only reflects the machine's
-load. A change that can slow inference, such as another image or token limit,
-also has to be judged on the headline figures, where a timeout counts as a
-leak.
+semantic skips are listed apart, timeouts and a detector that went away
+included. The figures are therefore conditional on both runs answering in time.
+The floors do set the model's decoding threshold (the lowest floor minus 0.1),
+so they could in principle change how long a request takes. At the floors
+measured so far they did not: the two recorded baselines, at the old and the
+current floors, show the same REDACT latency (median 669 and 671 ms, p95 2,986
+and 2,954 ms). A change is still judged on the headline figures as well, where
+a timeout counts as a leak, and each run's skip counts show a configuration
+that times out more.
 
 The comparison names both runs with their split, pipeline commit and digests.
 A run's `environment.json` does not record confidence floors set by a compose
