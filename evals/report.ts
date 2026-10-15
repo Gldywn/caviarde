@@ -397,8 +397,9 @@ const COMPARED_METRICS: ReadonlyArray<[string, Metric]> = [
   ["Over-masking", overMasking],
 ];
 
-/** Paired by group over the cases both runs answered. Each run's timeouts are
- * counted apart, so a configuration that slows inference still shows. */
+/** Paired by group over the cases both runs answered in time. Each run's skips
+ * are listed apart, so a slower configuration or a detector that went away
+ * still shows. */
 export function renderComparison(
   candidate: readonly CaseRecord[],
   reference: readonly CaseRecord[],
@@ -409,11 +410,15 @@ export function renderComparison(
   const timedOut = new Map(
     [...late(candidate), ...late(reference)].map((s) => [key(s), s]),
   );
-  const perSource = (scores: Iterable<CaseScore>) =>
-    count(
-      new Map(
-        [...groupBy(scores, (s) => s.source)].map(([s, v]) => [s, v.length]),
+  const tally = (scores: Iterable<CaseScore>, by: (s: CaseScore) => string) =>
+    count(new Map([...groupBy(scores, by)].map(([k, v]) => [k, v.length])));
+  // Oversized texts are skipped identically in both runs, so they say nothing.
+  const skips = (records: readonly CaseRecord[]) =>
+    tally(
+      byMode(records, "on").filter(
+        (s) => s.skipped !== null && s.skipped !== "too-large",
       ),
+      (s) => `${s.source} ${s.skipped}`,
     );
   const answered = (records: readonly CaseRecord[]) =>
     groupBy(
@@ -451,9 +456,9 @@ export function renderComparison(
       ],
       rows,
     ) +
-    `\n\nTimed out, candidate: ${perSource(late(candidate))}; reference: ` +
-    `${perSource(late(reference))}. Left out of both, timed out in either ` +
-    `run: ${perSource(timedOut.values())}.`
+    `\n\nSemantic skipped, candidate: ${skips(candidate)}; reference: ` +
+    `${skips(reference)}. Left out of both, timed out in either run: ` +
+    `${tally(timedOut.values(), (s) => s.source)}.`
   );
 }
 

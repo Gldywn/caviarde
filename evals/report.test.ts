@@ -41,27 +41,40 @@ it("reports candidate minus reference with its paired interval", () => {
     "| test | Over-masking | 10.0 % | 0.0 % | 10.0 % | [10.0 %, 10.0 %] |",
   );
 });
+
 it("refuses runs over different cases", () => {
   const candidate = GROUPS.map((g) => record(g, 2, 0));
   const reference = ["g1", "g2", "g4"].map((g) => record(g, 2, 0));
   expect(() => renderComparison(candidate, reference)).toThrow(/same cases/);
 });
 
-it("leaves out a case that timed out in either run and counts each run", () => {
-  const timeout = (r: CaseRecord): CaseRecord => ({
+it("leaves out a case that timed out in either run and lists each run's skips", () => {
+  const skip = (r: CaseRecord, why: "timeout" | "unreachable"): CaseRecord => ({
     ...r,
-    score: { ...r.score, skipped: "timeout" },
+    score: { ...r.score, skipped: why },
   });
   const both = GROUPS.map((g) => record(g, 2, 0));
   const report = renderComparison(
-    [...both, timeout(record("g4", 10, 0)), record("g5", 0, 0)],
-    [...both, record("g4", 0, 0), timeout(record("g5", 10, 0))],
+    [
+      ...both,
+      skip(record("g4", 10, 0), "timeout"),
+      skip(record("g5", 10, 0), "timeout"),
+      skip(record("g6", 10, 0), "timeout"),
+      record("g7", 0, 0),
+    ],
+    [
+      ...both,
+      record("g4", 0, 0),
+      record("g5", 0, 0),
+      skip(record("g6", 10, 0), "timeout"),
+      skip(record("g7", 10, 0), "unreachable"),
+    ],
   );
   expect(report).toContain(
-    "| test | Leaked chars | 20.0 % | 20.0 % | 0.0 % | [0.0 %, 0.0 %] |",
+    "| test | Leaked chars | 15.0 % | 40.0 % | -25.0 % |",
   );
   expect(report).toContain(
-    "Timed out, candidate: test 1; reference: test 1. Left out of both, " +
-      "timed out in either run: test 2.",
+    "Semantic skipped, candidate: test timeout 3; reference: test timeout 1, " +
+      "test unreachable 1. Left out of both, timed out in either run: test 3.",
   );
 });

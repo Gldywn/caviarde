@@ -485,6 +485,8 @@ async function compare(args: string[]): Promise<void> {
   const report = [
     await describe("Candidate", candidate),
     await describe("Reference", reference),
+    "The loaded confidence floors are not reported by the detector: floors " +
+      "set by a compose override leave no trace in these digests.",
     "",
     renderComparison(
       await readRecords(candidate),
