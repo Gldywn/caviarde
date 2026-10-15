@@ -397,18 +397,24 @@ const COMPARED_METRICS: ReadonlyArray<[string, Metric]> = [
   ["Over-masking", overMasking],
 ];
 
-/** Paired by group over the same cases. A timeout follows the machine's load,
- * not the configuration, so a case that timed out in either run is left out. */
+/** Paired by group over the cases both runs answered. Each run's timeouts are
+ * counted apart, so a configuration that slows inference still shows. */
 export function renderComparison(
   candidate: readonly CaseRecord[],
   reference: readonly CaseRecord[],
 ): string {
   const key = (s: CaseScore) => JSON.stringify([s.source, s.id]);
+  const late = (records: readonly CaseRecord[]) =>
+    byMode(records, "on").filter((s) => s.skipped === "timeout");
   const timedOut = new Map(
-    [...byMode(candidate, "on"), ...byMode(reference, "on")]
-      .filter((s) => s.skipped === "timeout")
-      .map((s) => [key(s), s.source]),
+    [...late(candidate), ...late(reference)].map((s) => [key(s), s]),
   );
+  const perSource = (scores: Iterable<CaseScore>) =>
+    count(
+      new Map(
+        [...groupBy(scores, (s) => s.source)].map(([s, v]) => [s, v.length]),
+      ),
+    );
   const answered = (records: readonly CaseRecord[]) =>
     groupBy(
       byMode(records, "on").filter((s) => !timedOut.has(key(s))),
@@ -433,9 +439,6 @@ export function renderComparison(
       ];
     }),
   );
-  const left = new Map<string, number>();
-  for (const source of timedOut.values())
-    left.set(source, (left.get(source) ?? 0) + 1);
   return (
     table(
       [
@@ -447,7 +450,10 @@ export function renderComparison(
         "95 % interval",
       ],
       rows,
-    ) + `\n\nLeft out, timed out in either run: ${count(left)}.`
+    ) +
+    `\n\nTimed out, candidate: ${perSource(late(candidate))}; reference: ` +
+    `${perSource(late(reference))}. Left out of both, timed out in either ` +
+    `run: ${perSource(timedOut.values())}.`
   );
 }
 

@@ -6,7 +6,7 @@ import {
   readFile,
   writeFile,
 } from "node:fs/promises";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { parseArgs } from "node:util";
 import { type Case, HarnessError } from "./cases";
 import { HOME_CASES } from "./home";
@@ -469,10 +469,28 @@ async function compare(args: string[]): Promise<void> {
   const [candidate, reference] = positionals;
   if (positionals.length !== 2 || !candidate || !reference)
     throw new HarnessError("compare takes a candidate run and a reference run");
-  const report = renderComparison(
-    await readRecords(candidate),
-    await readRecords(reference),
-  );
+  // Comparing configurations is the point, so differing environments are
+  // shown rather than refused.
+  const describe = async (role: string, dir: string) => {
+    const env = JSON.parse(
+      await readFile(join(dir, "environment.json"), "utf8"),
+    ) as Record<string, unknown>;
+    return (
+      `${role} \`${basename(dir)}\`: split ${String(env.split)}, pipeline ` +
+      `\`${String(env.pipeline)}\`${env.dirty ? " with uncommitted changes" : ""}, ` +
+      `compose.yaml \`${String(env.compose)}\`, detector patch ` +
+      `\`${String(env.detectorPatch)}\`.`
+    );
+  };
+  const report = [
+    await describe("Candidate", candidate),
+    await describe("Reference", reference),
+    "",
+    renderComparison(
+      await readRecords(candidate),
+      await readRecords(reference),
+    ),
+  ].join("\n");
   if (values.report) await writeFile(values.report, `${report}\n`);
   console.log(report);
 }

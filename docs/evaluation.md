@@ -163,11 +163,17 @@ on, with the difference bootstrapped on the same resampled groups:
 pnpm evals compare <candidate run directory> <reference run directory>
 ```
 
-A case that timed out in either run is left out of both, and counted: how
-long inference takes depends on the machine's load and on the detector's
-cache, not on the confidence floors, so a timeout in one run only would credit
-or blame the configuration for the machine.
+A case that timed out in either run is left out of both, and each run's
+timeouts are counted apart. The figures are therefore conditional on both runs
+answering. For the confidence floors that selection is neutral: the model runs
+the same pass whatever the floors, and the two recorded baselines, at the old
+and the current floors, show the same REDACT latency (median 669 and 671 ms,
+p95 2,986 and 2,954 ms), so a timeout in one run only reflects the machine's
+load. A change that can slow inference, such as another image or token limit,
+also has to be judged on the headline figures, where a timeout counts as a
+leak.
 
+The comparison names both runs with their split, pipeline commit and digests.
 A run's `environment.json` does not record confidence floors set by a compose
 override file, so the floors each compared run was started with have to be
 recorded alongside it.

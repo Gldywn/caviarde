@@ -41,23 +41,27 @@ it("reports candidate minus reference with its paired interval", () => {
     "| test | Over-masking | 10.0 % | 0.0 % | 10.0 % | [10.0 %, 10.0 %] |",
   );
 });
-
 it("refuses runs over different cases", () => {
   const candidate = GROUPS.map((g) => record(g, 2, 0));
   const reference = ["g1", "g2", "g4"].map((g) => record(g, 2, 0));
-  expect(() => renderComparison(candidate, reference)).toThrow();
+  expect(() => renderComparison(candidate, reference)).toThrow(/same cases/);
 });
 
-it("leaves out a case that timed out in either run", () => {
-  const candidate = GROUPS.map((g) => record(g, 2, 0));
-  const reference = GROUPS.map((g) => record(g, 2, 0));
-  const late = record("g4", 10, 0);
+it("leaves out a case that timed out in either run and counts each run", () => {
+  const timeout = (r: CaseRecord): CaseRecord => ({
+    ...r,
+    score: { ...r.score, skipped: "timeout" },
+  });
+  const both = GROUPS.map((g) => record(g, 2, 0));
   const report = renderComparison(
-    [...candidate, { ...late, score: { ...late.score, skipped: "timeout" } }],
-    [...reference, record("g4", 0, 0)],
+    [...both, timeout(record("g4", 10, 0)), record("g5", 0, 0)],
+    [...both, record("g4", 0, 0), timeout(record("g5", 10, 0))],
   );
   expect(report).toContain(
     "| test | Leaked chars | 20.0 % | 20.0 % | 0.0 % | [0.0 %, 0.0 %] |",
   );
-  expect(report).toContain("Left out, timed out in either run: test 1.");
+  expect(report).toContain(
+    "Timed out, candidate: test 1; reference: test 1. Left out of both, " +
+      "timed out in either run: test 2.",
+  );
 });

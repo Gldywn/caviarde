@@ -86,7 +86,7 @@ only an end-to-end run against a live detector showed it.
 The confidence thresholds in `compose.yaml` were measured with the evaluation
 harness on synthetic corpora, and the model's scores are context-dependent: the
 same string lands on either side of a threshold in two different documents. One
-sample proves nothing; a change is compared with `pnpm evals compare`.
+sample proves nothing; a floor change is compared with `pnpm evals compare`.
 
 ## Practical notes
 
